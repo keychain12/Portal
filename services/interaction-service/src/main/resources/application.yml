@@ -1,0 +1,102 @@
+# 💡 주요 변경 사항에 # 로 주석을 달아두었습니다.
+
+server:
+  port: 8083
+
+spring:
+  # 데이터베이스, 메일 등 다른 설정은 그대로 유지됩니다.
+  datasource:
+    url: jdbc:mysql://my-db.chy0kuwimcw9.ap-northeast-2.rds.amazonaws.com/collabtool?useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: admin
+    password: 2468086d
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: workspace-group-v2
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            # 1. DTO가 있는 패키지를 신뢰하도록 설정 (경로 끝에 .* 추가)
+            trusted:
+              packages: "com.example.intercation.dto.response.*"
+            # 2. [핵심] 기본값으로 사용할 DTO 클래스를 명시적으로 지정
+            # !! 중요: WorkspaceCreateDto 클래스 경로가 맞는지 꼭 확인하세요 !!
+            value:
+              default:
+                type: com.example.intercation.dto.response.WorkspaceCreateDto
+            # 3. 메시지 헤더의 타입 정보는 사용하지 않도록 명시
+            use:
+              type:
+                headers: false
+
+  # --- 기타 설정 ---
+  app:
+    base-url: http://localhost:3000
+  presence:
+    threshold:
+      online: 30000
+      idle: 300000
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: hyoung88ha@gmail.com
+    password: hdtwytpntoxvqenm
+    protocol: smtp
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+  feign:
+    client:
+      config:
+        default:
+          connect-timeout: 5000
+          read-timeout: 5000
+  cloud:
+    aws:
+      credentials:
+        access-key: AKIAWCYX76GS5OY7HZMB
+        secret-key: 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
+      s3:
+        bucket: bucket1msa
+      region:
+        static: ap-northeast-2
+      stack:
+        auto: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# 4. 커스텀 속성은 spring 블록 밖으로 분리하여 가독성 향상
+topic:
+  workspace: workspace.created
+
+logging:
+  level:
+    org.hibernate.SQL: debug
