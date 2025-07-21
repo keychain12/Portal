@@ -95,7 +95,7 @@ public class WorkspaceService {
     }
 
     @Transactional(readOnly = true)
-//    @Cacheable(value = "workspaceDetails", key = "#slug")
+    @Cacheable(value = "workspaceDetails", key = "#slug")
     public WorkspaceDetailResponse findByUrlSlug(String slug) {
         Workspace workspace = workspaceRepository.findByUrlSlug(slug)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "워크스페이스를 찾을 수 없습니다."));

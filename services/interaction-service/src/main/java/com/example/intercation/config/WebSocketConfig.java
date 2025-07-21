@@ -16,8 +16,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws") // 예: http://localhost:8082/ws
-                .setAllowedOrigins("http://localhost:3000") // CORS 허용
-                .withSockJS(); // SockJS는 웹소켓을 지원하지 않는 브라우저를 위한 대체 옵션
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins("http://localhost:3000")
+                .withSockJS();
     }
 }

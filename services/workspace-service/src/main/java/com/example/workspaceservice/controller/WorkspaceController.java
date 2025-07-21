@@ -88,16 +88,16 @@ public class WorkspaceController {
         return "workspace:" + wsId + ":presence";
     }
 
-    @PostMapping("/workspaces/{wsId}/presence/heartbeat")
-    public ResponseEntity<Void> heartBeat(@PathVariable Long wsId, @LoginUserId Long userId) {
-        String key = presenceKey(wsId);
+    @PostMapping("/workspaces/{workspaceId}/presence/heartbeat")
+    public ResponseEntity<Void> heartBeat(@PathVariable Long workspaceId, @LoginUserId Long userId) {
+        String key = presenceKey(workspaceId);
         redis.opsForZSet().add(key, userId, System.currentTimeMillis());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/workspaces/{wsId}/presence")
-    public ResponseEntity<?> listPresence(@PathVariable Long wsId) {
-        String key = presenceKey(wsId);
+    @GetMapping("/workspaces/{workspaceId}/presence")
+    public ResponseEntity<?> listPresence(@PathVariable Long workspaceId) {
+        String key = presenceKey(workspaceId);
         long now = System.currentTimeMillis();
 
         Set<Long> active = redis.opsForZSet()

@@ -68,7 +68,7 @@ public class AuthService {
         //  redisTemplate.opsForValue() < 단순 String 기반 키벨류 저장,   set(키,벨류,만료시간)
 
 
-        // ✅ 이메일 + userId 같이 넣기
+        //  이메일 + userId 같이 넣기
         return jwtUtil.generateToken(user.getId(), user.getEmail());
     }
 }

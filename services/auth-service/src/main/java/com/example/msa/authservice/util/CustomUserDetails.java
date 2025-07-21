@@ -37,7 +37,6 @@ public class CustomUserDetails implements UserDetails {
         return user.getEmail();
     }
 
-    // ✅ userId도 외부에서 꺼낼 수 있도록 추가
     public Long getUserId() {
         return user.getId();
     }

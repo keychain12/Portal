@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevelw.PROTECTED)
 public class WorkspaceInvitation {
 
     @Id

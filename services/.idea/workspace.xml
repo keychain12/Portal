@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="c7c866f2-4ed4-479d-998f-651fccd40ebc" name="변경" comment="">
+      <change afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/config/KafkaConsumerConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/dto/response/MailEventDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/dto/response/WorkspaceMemberResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/util/MailConsumer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clients/my-app" beforeDir="false" afterPath="$PROJECT_DIR$/../clients/my-app" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/WorkspaceServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/WorkspaceServiceApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/config/RedisConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/config/RedisConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/controller/WorkspaceController.java" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/controller/WorkspaceController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/dto/response/WorkspaceDetailResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/dto/response/WorkspaceDetailResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/entity/WorkspaceMember.java" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/entity/WorkspaceMember.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/repository/WorkspaceMemberRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/repository/WorkspaceMemberRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/service/S3Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/service/S3Service.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/service/WorkspaceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/service/WorkspaceService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/util/WorkspaceInvitationEventHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/workspace-service/src/main/java/com/example/workspaceservice/util/WorkspaceInvitationEventHandler.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="30BoHjokjh1MJPP4ZiS15C16hvY" />
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "/Users/green/Portal/services",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="c7c866f2-4ed4-479d-998f-651fccd40ebc" name="변경" comment="" />
+      <created>1753110240263</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1753110240263</updated>
+      <workItem from="1753110241410" duration="43000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
