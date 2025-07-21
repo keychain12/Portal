@@ -21,7 +21,7 @@ public class JwtUtil {
     }
 
     /**
-     * ✅ userId + email을 함께 담아 토큰 생성
+     *  userId + email을 함께 담아 토큰 생성
      */
     public String generateToken(Long userId, String email) {
         Claims claims = Jwts.claims().setSubject(email);
@@ -36,7 +36,7 @@ public class JwtUtil {
     }
 
     /**
-     * ✅ 토큰에서 이메일(subject) 추출
+     *  토큰에서 이메일(subject) 추출
      */
     public String validateAndGetUsername(String token) {
         return Jwts.parserBuilder()
@@ -48,7 +48,7 @@ public class JwtUtil {
     }
 
     /**
-     * ✅ 토큰에서 userId 추출
+     *   토큰에서 userId 추출
      */
     public Long extractUserId(String token) {
         return Jwts.parserBuilder()

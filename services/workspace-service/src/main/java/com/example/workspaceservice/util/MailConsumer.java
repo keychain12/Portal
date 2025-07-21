@@ -36,10 +36,4 @@ public class MailConsumer {
         );
     }
 
-    // 최종 실패한 메시지가 이곳으로 들어옵니다.
-    @DltHandler
-    public void dltHandler(MailEventDto mailEvent) {
-        log.error("=============== [DLT] 메일 발송 최종 실패: {} ===============", mailEvent.getToEmail());
-        // TODO: 관리자에게 알림 보내는 로직 등 추가
-    }
 }

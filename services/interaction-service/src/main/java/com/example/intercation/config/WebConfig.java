@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-    private final LoginUserIdArgumentResolver loginUserIdArgumentResolver; // ✅ 주입 받도록 수정
+    private final LoginUserIdArgumentResolver loginUserIdArgumentResolver;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {

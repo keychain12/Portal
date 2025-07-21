@@ -41,7 +41,7 @@ public class WorkspaceInvitationEventHandler {
         Long workspaceId = event.getWorkspaceId();
         log.info("DB 커밋 완료. 워크스페이스 ID {} 후속 처리 시작.", workspaceId);
 
-        // 1. 후속 처리에 필요한 정보 조회 (기존과 거의 동일)
+        // 1. 후속 처리에 필요한 정보 조회
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
         WorkspaceMember owner = workspaceMemberRepository.findByWorkspaceIdAndRole(workspaceId, WorkspaceRole.OWNER);

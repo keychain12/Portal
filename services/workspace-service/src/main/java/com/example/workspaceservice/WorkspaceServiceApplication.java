@@ -10,8 +10,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-@EnableKafka // ✅ 이 어노테이션을 추가해보세요.
-//@EnableCaching
+@EnableKafka
+@EnableCaching
 @SpringBootApplication
 @EnableAsync // 비동기 기능 활성화
 @EnableFeignClients(basePackages = "com.example.workspaceservice.client") // 이거 추가!
