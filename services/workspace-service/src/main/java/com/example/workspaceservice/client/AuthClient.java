@@ -14,6 +14,8 @@ public interface AuthClient {
     @GetMapping("/user/profile")
     UserProfileResponse getUserProfileByEmail(@RequestParam("email") String email);
 
+    @GetMapping("/user/info")
+    UserProfileResponse getUserProfileById(@RequestParam("userId") Long userId);
 }
 
 

@@ -3,6 +3,7 @@ package com.example.workspaceservice.repository;
 import com.example.workspaceservice.entity.Workspace;
 import com.example.workspaceservice.entity.WorkspaceMember;
 import com.example.workspaceservice.entity.WorkspaceRole;
+import org.hibernate.jdbc.Work;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -15,4 +16,6 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
     boolean existsByWorkspaceIdAndUserId(Long workspace_id, Long userId);
 
     List<WorkspaceMember> findByWorkspaceIdAndUserIdIn(Long workspaceId, List<Long> userId);
+
+    Optional<WorkspaceMember> findByWorkspaceIdAndUserId(Long id, Long userId);
 }

@@ -1,19 +1,28 @@
 package com.example.workspaceservice.dto.response;
 
 import com.example.workspaceservice.entity.Workspace;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import com.querydsl.core.annotations.QueryProjection;
+import lombok.*;
 
 @Getter
 @Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class WorkspaceResponse {
     private Long id;
     private String name;
     private String description;
     private String urlSlug;
+    private Long memberCount;
+
+    @QueryProjection
+    @Builder
+    public WorkspaceResponse(Long id, String name, String description, String urlSlug, Long memberCount) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.urlSlug = urlSlug;
+        this.memberCount = memberCount;
+    }
 
     public static WorkspaceResponse toResponse(Workspace entity) {
         return WorkspaceResponse.builder()
