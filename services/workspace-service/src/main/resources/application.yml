@@ -7,8 +7,10 @@ spring:
 
 
 
+
   app:
     base-url: http://localhost:3000
+    default-profile-image-url: "https://bucket1msa.s3.ap-northeast-2.amazonaws.com/default_img.png"
 
   presence:
     threshold:
@@ -22,16 +24,15 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
-      group-id: default-group
+      group-id: mail-group-v4 # 새 그룹 아이디 유지
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      # ▼▼▼▼▼ 이 부분이 수정되었습니다 ▼▼▼▼▼
-      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        # 실제 역직렬화를 담당할 클래스를 여기에 지정합니다.
-        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json.trusted.packages: "*"
         spring.json.use.type.headers: false
+      # 기본 타입을 명시해서 "어떤 클래스로 바꿀지 모르겠다"는 에러를 해결
+        spring.json.value.default.type: com.example.workspaceservice.dto.response.MailEventDto # 👈 실제 DTO 경로로 수정!
 
   mail:
     host: smtp.gmail.com

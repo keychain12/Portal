@@ -51,5 +51,11 @@ public class WorkspaceMember {
                 .build();
     }
 
+    public void updateProfile(String nickname, String profileImgUrl) {
+        WorkspaceMember.builder()
+                .nickname(nickname)
+                .profileImgUrl(profileImgUrl)
+                .build();
+    }
 
 }

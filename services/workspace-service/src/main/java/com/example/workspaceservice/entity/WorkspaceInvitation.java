@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevelw.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceInvitation {
 
     @Id
@@ -47,7 +47,7 @@ public class WorkspaceInvitation {
     }
 
     // 초대받은후 초대상태, 초대 응답 날짜 업데이트
-    public void updateStatus() {
+    public void accept() {
         this.inviteStatus = InviteStatus.ACCEPTED;
         this.respondedAt = LocalDateTime.now();
     }
