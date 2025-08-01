@@ -2,6 +2,7 @@ package com.example.intercation.service;
 
 import com.example.intercation.client.AuthClient;
 import com.example.intercation.client.WorkspaceClient;
+import com.example.intercation.dto.request.UpdateChannelRequest;
 import com.example.intercation.dto.response.UserProfileResponse;
 import com.example.intercation.dto.response.WorkspaceMemberResponse;
 import com.example.intercation.entity.ChannelMember;
@@ -9,6 +10,8 @@ import com.example.intercation.dto.request.CreateChannelRequest;
 import com.example.intercation.dto.response.ChannelDetailResponse;
 import com.example.intercation.dto.response.ChannelSimpleResponse;
 import com.example.intercation.entity.Channel;
+import com.example.intercation.entity.Permission;
+import com.example.intercation.entity.Role;
 import com.example.intercation.repository.ChannelMemberRepository;
 import com.example.intercation.repository.ChannelRepository;
 import lombok.Builder;
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,7 +47,7 @@ public class ChannelService {
         }
 
         //채널 생성 저장
-        Channel channel = Channel.from(workspaceId, creatorId, request.getChannelName());
+        Channel channel = Channel.from(workspaceId, creatorId, request.getChannelName(), request.getChannelType());
         //채널멤버 연관관계 메서드
         channel.addMemberList(creatorId);
         //후 저장
@@ -64,7 +68,6 @@ public class ChannelService {
     @Transactional(readOnly = true)
     public ChannelDetailResponse findChannelDetail(Long workspaceId, Long channelId, Long userId) {
 
-
         // 채널 있는지 확인
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("채널을 찾을수 없습니다.."));
@@ -78,20 +81,24 @@ public class ChannelService {
         // 워크스페이스 멤버( role,nickname,profileImgUrl) 가져옴
         List<WorkspaceMemberResponse> workspaceMembers = workspaceClient.getWorkspaceMembers(workspaceId, userIds);
 
-        List<ChannelDetailResponse.MemberInfo> members = workspaceMembers.stream()
-                .map(member -> ChannelDetailResponse.MemberInfo.builder()
-                        .userId(member.getUserId())
-                        .nickName(member.getNickname())
-                        .profileImgUrl(member.getProfileImgUrl())
-                        .build()).toList();
+        return ChannelDetailResponse.from(channel, workspaceMembers);
 
+    }
 
-        return ChannelDetailResponse.builder()
-                .channelName(channel.getChannelName())
-                .topic(channel.getTopic())
-                .description(channel.getDescription())
-                .createdAt(channel.getCreatedAt())
-                .members(members)
-                .build();
+    public void updateChannel(Long workspaceId, Long channelId, Long userId, UpdateChannelRequest request) {
+        // 채널 맞는지 확인..
+        Channel channel = channelRepository.findByIdAndWorkspaceId(channelId, workspaceId)
+                .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다."));
+
+        // 권환 학인
+        Role role = channelMemberRepository.findRoleByUserIdAndChannelId(userId, channelId);
+        // 수정권한 없을시 에러
+        if (!role.getPermissions().contains(Permission.EDIT_CHANNEL_PROFILE)) {
+            throw new IllegalArgumentException("채널 수정 권한이 없습니다.");
+        }
+
+        // 업뎃
+        channel.update(request);
+
     }
 }

@@ -100,3 +100,7 @@ topic:
 logging:
   level:
     org.hibernate.SQL: debug
+
+jwt:
+  secret:
+    key: TVlfU0VDUkVUX0tFWV9NVVNUX0JFX0xPTkdfRU5PVUdIX0ZPUl9IUzI1Nl9BTEdPUklUSE0=

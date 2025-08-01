@@ -28,6 +28,10 @@ public class ChannelMember {
     @JoinColumn(name = "channel_id")
     private Channel channel;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private Role role; // 채널 역할
+
     // 정적 팩토리 메서드
     public static ChannelMember from(Long userId, Channel channel) {
         return ChannelMember.builder()
