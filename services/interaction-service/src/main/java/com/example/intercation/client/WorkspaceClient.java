@@ -16,4 +16,8 @@ public interface WorkspaceClient {
     List<WorkspaceMemberResponse> getWorkspaceMembers(@PathVariable Long workspaceId,
                                                     @RequestParam List<Long> userId);
 
+    @GetMapping("/api/workspace/{workspaceId}/user/{userId}")
+    WorkspaceMemberResponse findByWorkspaceIdAndUserId(@PathVariable Long workspaceId,
+                                                                @PathVariable Long userId);
+
 }

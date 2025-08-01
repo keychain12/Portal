@@ -1,25 +1,30 @@
 package com.example.intercation.util;
 
+import com.example.intercation.entity.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.nio.file.AccessDeniedException;
+
 @Component
 @RequiredArgsConstructor
 public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private final JwtUtil jwtUtil;
+    // JwtUtil은 이제 필요 없습니다.
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
+        // 이 부분은 동일
         return parameter.hasParameterAnnotation(LoginUserId.class) &&
                 parameter.getParameterType().equals(Long.class);
     }
-
 
     @Override
     public Object resolveArgument(
@@ -28,12 +33,13 @@ public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolve
             NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) throws Exception {
 
-        String authHeader = webRequest.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("유효하지 않은 Authorization 헤더");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetailsImpl)) {
+            throw new AccessDeniedException("사용자 인증 정보가 없습니다.");
         }
 
-        String token = authHeader.replace("Bearer ", "");
-        return jwtUtil.validateAndGetUserId(token);
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        return userDetails.getUserId();
     }
 }

@@ -2,6 +2,7 @@ package com.example.intercation.repository;
 
 import com.example.intercation.entity.ChannelMember;
 import com.example.intercation.entity.Channel;
+import com.example.intercation.entity.Role;
 import feign.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,8 @@ public interface ChannelMemberRepository extends JpaRepository<ChannelMember, Lo
     List<ChannelMember> findAllByChannel(Channel channel);
 
     boolean existsByChannelAndUserId(Channel newChannel, Long creatorId);
+
+    ChannelMember findByIdAndUserId(Long channelId, Long userId);
+
+    Role findRoleByUserIdAndChannelId(Long userId, Long channelId);
 }

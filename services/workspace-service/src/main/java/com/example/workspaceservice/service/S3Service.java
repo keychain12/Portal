@@ -22,11 +22,14 @@ class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    @Value("${spring.app.default-profile-image-url}")
+    private String defaultProfileImageUrl;
+
     public String upload(MultipartFile file) throws IOException {
 
         // 1. 파일이 null이거나 비어있으면, 아무 작업도 하지 않고 null을 반환
         if (file == null || file.isEmpty()) {
-            return null;
+            return defaultProfileImageUrl;
         }
         // 2. 파일 이름 중복 방지
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();

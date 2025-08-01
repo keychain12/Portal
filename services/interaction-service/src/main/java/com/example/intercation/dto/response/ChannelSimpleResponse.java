@@ -13,11 +13,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ChannelSimpleResponse {
 
+    private Long id;
     private String channelName; // 채널이름
 
 
     public static ChannelSimpleResponse toResponse(Channel channel) {
         return ChannelSimpleResponse.builder()
+                .id(channel.getId())
                 .channelName(channel.getChannelName())
                 .build();
     }

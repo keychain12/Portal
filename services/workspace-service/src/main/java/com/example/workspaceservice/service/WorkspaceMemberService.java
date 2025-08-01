@@ -1,5 +1,6 @@
 package com.example.workspaceservice.service;
 
+import com.example.workspaceservice.dto.response.WorkspaceMemberResponse;
 import com.example.workspaceservice.entity.Workspace;
 import com.example.workspaceservice.entity.WorkspaceMember;
 import com.example.workspaceservice.repository.WorkspaceMemberRepository;
@@ -35,5 +36,12 @@ public class WorkspaceMemberService {
 
         // 4. 멤버 정보 업데이트 (JPA의 Dirty Checking 활용)
         member.updateProfile(newNickname, newProfileUrl);
+    }
+
+    public WorkspaceMemberResponse findByWorkspaceIdAndUserId(Long workspaceId, Long userId) {
+        WorkspaceMember workspaceMember = memberRepository.findByWorkspaceIdAndUserId(workspaceId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 워크스페이스 멤버가 존재하지 않습니다."));
+
+        return WorkspaceMemberResponse.toResponse(workspaceMember);
     }
 }
