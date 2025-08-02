@@ -39,7 +39,6 @@ public class WorkspaceInvitationEventHandler {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleInvitationEvent(WorkspaceCreatedEvent event) {
         Long workspaceId = event.getWorkspaceId();
-        log.info("DB 커밋 완료. 워크스페이스 ID {} 후속 처리 시작.", workspaceId);
 
         // 1. 후속 처리에 필요한 정보 조회
         Workspace workspace = workspaceRepository.findById(workspaceId)
@@ -50,7 +49,6 @@ public class WorkspaceInvitationEventHandler {
         // 2. 다른 서비스에 워크스페이스 생성을 알리는 Kafka 메시지 발행
         WorkspaceCreateDto createDto = WorkspaceCreateDto.from(workspace, owner.getUserId());
         workspaceEventProducer.sendWorkspaceCreatedEvent(createDto);
-        log.info("Kafka 메시지 발행 (워크스페이스 생성): {}", createDto.getWorkspaceName());
 
         // 3. 초대 메일 발송을 '요청'하는 Kafka 메시지 발행
         for (WorkspaceInvitation invitation : invitations) {

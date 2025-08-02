@@ -2,6 +2,7 @@ package com.example.intercation.service;
 
 import com.example.intercation.dto.request.CreateChannelRequest;
 import com.example.intercation.dto.response.WorkspaceCreateDto;
+import com.example.intercation.entity.ChannelType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class WorkspaceEventConsumer {
 
         CreateChannelRequest request = new CreateChannelRequest();
         request.setChannelName(workspaceName);
+        request.setChannelType(ChannelType.PUBLIC);
 
         channelService.createChannel(workspaceId, request, creatorId);
     }

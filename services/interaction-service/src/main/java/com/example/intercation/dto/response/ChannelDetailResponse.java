@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 public class ChannelDetailResponse {
+    private Long id;
     private String channelName;
     private String topic;
     private String description;
@@ -42,6 +43,7 @@ public class ChannelDetailResponse {
                 .collect(Collectors.toList());
 
         return ChannelDetailResponse.builder()
+                .id(channel.getId())
                 .channelName(channel.getChannelName())
                 .topic(channel.getTopic())
                 .description(channel.getDescription())
