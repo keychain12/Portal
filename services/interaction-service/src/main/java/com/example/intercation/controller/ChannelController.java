@@ -44,7 +44,6 @@ public class ChannelController {
     public ResponseEntity<?> getChannelsInWorkspace(@PathVariable("workspaceId") Long workspaceId,
                                                     @LoginUserId Long userId) {
 
-        log.info("[디버그] workspaceId = {}, userId = {}", workspaceId, userId);
 
 
         List<ChannelSimpleResponse> channelList = channelService.findChannelsByUserAndWorkspace(workspaceId, userId);
