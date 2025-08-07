@@ -53,3 +53,15 @@ Portal은 Slack과 유사한 팀 협업 및 커뮤니케이션을 위한 마이�
 
 *   **설명:** 워크스페이스, 채널 생성 및 관리, 워크스페이스 내 사용자 역할 등 애플리케이션의 핵심 비즈니스 로직을 관리합니다.
 
+## 프로젝트 내용들 ..
+
+- DDD 기반 워크스페이스 생성 기능 설계 및 구현
+
+https://rose-quesadilla-dab.notion.site/DDD-215440d2302f8066bc05cb36fb286376?pvs=74
+
+- [MSA] Saga 패턴을 이용한 분산 트랜잭션 및 재시도 메커니즘 구현
+
+
+https://rose-quesadilla-dab.notion.site/MSA-Saga-245440d2302f80b3a500f636b70e0537?pvs=73
+
+
