@@ -24,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,11 +34,10 @@ public class WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
     private final S3Service s3Service;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final WorkspaceMemberRepository workspaceMemberRepository;
     private final SlugGenerator slugGenerator;
 
     // 워크스페이스 생성
-    @CacheEvict(value = "workspaceDetails", allEntries = true)
+    @CacheEvict(value = "workspaces", allEntries = true) // 생성시 캐시 무효ㅇ화하기
     public WorkspaceResponse createWorkspace(CreateWorkspaceRequest request, Long userId, MultipartFile profileImage) throws IOException {
         // 랜덤 url 만들기
         String randomSlug = slugGenerator.generate();
@@ -60,24 +60,17 @@ public class WorkspaceService {
 
     //내 워크 스페이스 목록조회
     @Transactional(readOnly = true)
+    @Cacheable(value = "workspaces" ,key = "#userId")
     public Page<WorkspaceResponse> getMyWorkspace(Long userId, Pageable pageable) {
         return workspaceRepository.findAllByUserId(userId, pageable);
     }
     // 워크스페이스 상세 조회
     @Transactional(readOnly = true)
-//    @Cacheable(value = "workspaceDetails", key = "#slug")
     public WorkspaceDetailResponse findByUrlSlug(String slug) {
         Workspace workspace = workspaceRepository.findByUrlSlug(slug)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "워크스페이스를 찾을 수 없습니다."));
         return WorkspaceDetailResponse.from(workspace);
     }
 
-    //워크스페이스 멤버들 조회
-    public List<WorkspaceMemberResponse> findMembersInWorkspace(Long workspaceId, List<Long> userId) {
-        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findByWorkspaceIdAndUserIdIn(workspaceId, userId);
 
-        return workspaceMembers.stream()
-                .map(WorkspaceMemberResponse::toResponse)
-                .toList();
-    }
 }

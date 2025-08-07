@@ -25,6 +25,8 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: interactionStatusUpdate:com.example.intercation.dto.request.InteractionChannelStatusUpdate
     consumer:
       group-id: workspace-group-v2
       auto-offset-reset: latest
@@ -88,6 +90,7 @@ spring:
     redis:
       host: localhost
       port: 6379
+      database: 0
   servlet:
     multipart:
       max-file-size: 10MB
@@ -104,3 +107,15 @@ logging:
 jwt:
   secret:
     key: TVlfU0VDUkVUX0tFWV9NVVNUX0JFX0xPTkdfRU5PVUdIX0ZPUl9IUzI1Nl9BTEdPUklUSE0=
+
+cloud:
+  aws:
+    credentials:
+      access-key: AKIAWCYX76GS5OY7HZMB
+      secret-key: 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
+    s3:
+      bucket: bucket1msa
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false

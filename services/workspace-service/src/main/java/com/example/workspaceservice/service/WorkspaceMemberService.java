@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +36,7 @@ public class WorkspaceMemberService {
         // 3. S3에 새 이미지 업로드
         String newProfileUrl = s3Service.upload(newProfileImage);
 
-        // 4. 멤버 정보 업데이트 (JPA의 Dirty Checking 활용)
+        // 4. 멤버 정보 업데이트 Dirty Checking 활용
         member.updateProfile(newNickname, newProfileUrl);
     }
 
@@ -43,5 +45,22 @@ public class WorkspaceMemberService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 워크스페이스 멤버가 존재하지 않습니다."));
 
         return WorkspaceMemberResponse.toResponse(workspaceMember);
+    }
+
+    //워크스페이스 멤버들 조회
+    public List<WorkspaceMemberResponse> findMembersInWorkspace(Long workspaceId, List<Long> userId) {
+        List<WorkspaceMember> workspaceMembers = memberRepository.findByWorkspaceIdAndUserIdIn(workspaceId, userId);
+
+        return workspaceMembers.stream()
+                .map(WorkspaceMemberResponse::toResponse)
+                .toList();
+    }
+
+    public List<WorkspaceMemberResponse> findAllByWorkspaceId(Long workspaceId) {
+        List<WorkspaceMember> members = memberRepository.findAllByWorkspaceId(workspaceId);
+
+        return members.stream()
+                .map(WorkspaceMemberResponse::toResponse)
+                .collect(Collectors.toList());
     }
 }

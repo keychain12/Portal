@@ -42,13 +42,6 @@ import java.util.stream.Collectors;
 public class WorkspaceController {
 
     private final WorkspaceService workspaceService;
-    private final RedisTemplate<String, Long> redis;  // RedisTemplate<String, Long> 또는 RedisTemplate<String, Object>
-
-    @Value("${spring.presence.threshold.online}")
-    private long onlineThreshold;
-
-    @Value("${spring.presence.threshold.idle}")
-    private long idleThreshold;
 
 
     @PostMapping("/workspaces")
@@ -84,59 +77,4 @@ public class WorkspaceController {
     }
 
 
-    private String presenceKey(Long wsId) {
-        return "workspace:" + wsId + ":presence";
-    }
-
-    @PostMapping("/workspaces/{workspaceId}/presence/heartbeat")
-    public ResponseEntity<Void> heartBeat(@PathVariable Long workspaceId, @LoginUserId Long userId) {
-        String key = presenceKey(workspaceId);
-        redis.opsForZSet().add(key, userId, System.currentTimeMillis());
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/workspaces/{workspaceId}/presence")
-    public ResponseEntity<?> listPresence(@PathVariable Long workspaceId) {
-        String key = presenceKey(workspaceId);
-        long now = System.currentTimeMillis();
-
-        Set<Long> active = redis.opsForZSet()
-                .rangeByScore(key, now - onlineThreshold, now);
-
-        Set<Long> idle = redis.opsForZSet()
-                .rangeByScore(key, now - idleThreshold, now);
-
-        Map<Long, String> result = new HashMap<>();
-
-        if (active != null) {
-            active.forEach(id -> result.put(id, "ACTIVE"));
-        }
-
-        if (idle != null) {
-            idle.forEach(id -> result.putIfAbsent(id, "IDLE"));
-        }
-
-        return ResponseEntity.ok(result);
-
-    }
-
-    @GetMapping("/workspace/{workspaceId}/members")
-    @Operation(summary = "workspaceMember 조회" , description = "Role,NickName,프로필url 리턴")
-    public ResponseEntity<?> getWorkspaceMembers(@PathVariable Long workspaceId,
-                                                      @RequestParam List<Long> userId) {
-
-        List<WorkspaceMemberResponse> membersInWorkspace = workspaceService.findMembersInWorkspace(workspaceId, userId);
-
-        return ResponseEntity.ok(membersInWorkspace);
-    }
-
-
-
-
-   /* @PutMapping("/workspaces")
-    public ResponseEntity<Long> modifyWorkspace(@RequestBody @Valid WorkspaceRequest request,
-                                                @LoginUserId String userId) {
-
-
-    }*/
 }

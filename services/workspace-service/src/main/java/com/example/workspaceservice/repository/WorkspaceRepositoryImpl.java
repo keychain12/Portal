@@ -37,7 +37,7 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
                 .join(w.members, wm)
                 // 2. 특정 유저가 속한 워크스페이스를 찾기 위한 조인
                 .join(w.members, userMember)
-                .where(userMember.userId.eq(userId))
+                .where(userMember.userId.eq(userId).and(w.status.eq(com.example.workspaceservice.entity.WorkspaceStatus.ACTIVE)))
                 .groupBy(w.id, w.name) // 카운트를 위해 그룹화
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -48,7 +48,7 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
                 .select(w.id.countDistinct()) // 유저가 속한 워크스페이스의 총 개수
                 .from(w)
                 .join(w.members, userMember)
-                .where(userMember.userId.eq(userId))
+                .where(userMember.userId.eq(userId).and(w.status.eq(com.example.workspaceservice.entity.WorkspaceStatus.ACTIVE)))
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total != null ? total : 0);

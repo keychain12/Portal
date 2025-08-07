@@ -16,12 +16,13 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/workspace")
+@RequestMapping("/api")
 public class WorkspaceMemberController {
 
     private final WorkspaceMemberService workspaceMemberService;
 
-    @PatchMapping("/{slug}/members/me")
+
+    @PatchMapping("/workspace/{slug}/members/me")
     @Operation(summary = "워크스페이스내에 내 닉네임,프로필 수정")
     public ResponseEntity<Void> acceptProfile(@PathVariable String slug,
                                               @RequestParam String nickname,
@@ -34,7 +35,7 @@ public class WorkspaceMemberController {
 
     }
 
-    @GetMapping("/{workspaceId}/user/{userId}")
+    @GetMapping("/workspace/{workspaceId}/user/{userId}")
     @Operation(summary = "페인으로가져올 워크스페이스맴버정보")
     public ResponseEntity<WorkspaceMemberResponse> findByWorkspaceIdAndUserId(@PathVariable Long workspaceId,
                                                                     @PathVariable Long userId) {
@@ -42,5 +43,23 @@ public class WorkspaceMemberController {
 
         return ResponseEntity.ok(workspaceMember);
     }
+
+    @GetMapping("/workspace/{workspaceId}/members")
+    @Operation(summary = "workspaceMember 조회" , description = "Role,NickName,프로필url 리턴")
+    public ResponseEntity<?> getWorkspaceMembers(@PathVariable Long workspaceId,
+                                                 @RequestParam List<Long> userId) {
+
+        List<WorkspaceMemberResponse> membersInWorkspace = workspaceMemberService.findMembersInWorkspace(workspaceId, userId);
+
+        return ResponseEntity.ok(membersInWorkspace);
+    }
+
+    @GetMapping("/workspaces/{workspaceId}/members")
+    public ResponseEntity<?> getAllWorkspaceMembers(@PathVariable Long workspaceId) {
+        List<WorkspaceMemberResponse> membersInWorkspace = workspaceMemberService.findAllByWorkspaceId(workspaceId);
+
+        return ResponseEntity.ok(membersInWorkspace);
+    }
+
 
 }
