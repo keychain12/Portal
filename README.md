@@ -63,6 +63,14 @@ https://rose-quesadilla-dab.notion.site/DDD-215440d2302f8066bc05cb36fb286376?pvs
 
 https://rose-quesadilla-dab.notion.site/Redis-224440d2302f80799d38cdfd69f6b6cf
 
+- 워크스페이스 초대 메일 발송 with @TransactionalEventListener
+
+https://rose-quesadilla-dab.notion.site/with-TransactionalEventListener-215440d2302f804798f4dcb1478ecc3d
+
+- 다른 디비 어케조회함? FeignClient를 사용해보자
+
+https://rose-quesadilla-dab.notion.site/FeignClient-216440d2302f80d28325e79e12c010ed?pvs=74
+
 - [MSA] Saga 패턴을 이용한 분산 트랜잭션 및 재시도 메커니즘 구현
 
 https://rose-quesadilla-dab.notion.site/MSA-Saga-245440d2302f80b3a500f636b70e0537?pvs=73
