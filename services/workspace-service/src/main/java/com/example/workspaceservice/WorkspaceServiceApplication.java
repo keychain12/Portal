@@ -9,12 +9,14 @@ import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableKafka
 @EnableCaching
 @SpringBootApplication
+@EnableScheduling //스케쥴링 어노테이션
 @EnableAsync // 비동기 기능 활성화
-@EnableFeignClients(basePackages = "com.example.workspaceservice.client") // 이거 추가!
+@EnableFeignClients(basePackages = "com.example.workspaceservice.client") // 페인 안될시..이거 추가!
 @ImportAutoConfiguration({FeignAutoConfiguration.class})
 public class WorkspaceServiceApplication {
 

@@ -6,9 +6,11 @@ import com.example.workspaceservice.entity.Workspace;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.workspaceservice.entity.WorkspaceStatus;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface WorkspaceRepository extends JpaRepository<Workspace,Long> , WorkspaceRepositoryCustom{
@@ -22,5 +24,7 @@ public interface WorkspaceRepository extends JpaRepository<Workspace,Long> , Wor
     Optional<Workspace> findByUrlSlug(String slug);
 
     Optional<Workspace> findById(Long workspaceId);
+
+    List<Workspace> findByStatusAndRetryCountLessThan(WorkspaceStatus status, int retryCount);
 
 }

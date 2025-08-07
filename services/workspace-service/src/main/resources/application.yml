@@ -30,9 +30,12 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-        spring.json.use.type.headers: false
-      # 기본 타입을 명시해서 "어떤 클래스로 바꿀지 모르겠다"는 에러를 해결
-        spring.json.value.default.type: com.example.workspaceservice.dto.response.MailEventDto # 👈 실제 DTO 경로로 수정!
+        spring.json.use.type.headers: true
+#        spring.json.value.default.type: com.example.workspaceservice.dto.response.MailEventDto # 👈 실제 DTO 경로로 수정!
+        spring.json.type.mapping:
+               interactionStatusUpdate:com.example.workspaceservice.dto.event.InteractionChannelStatusUpdate,
+               mailEvent:com.example.workspaceservice.dto.response.MailEventDto
+
 
   mail:
     host: smtp.gmail.com

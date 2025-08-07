@@ -30,6 +30,11 @@ public class Workspace {
     @Column(nullable = false, unique = true, length = 100)
     private String urlSlug; // 슬러그url
 
+    @Enumerated(EnumType.STRING)
+    private WorkspaceStatus status; // 워크스페이스 상태
+
+    private int retryCount; // 재시도 횟수
+
     private LocalDateTime createdAt; // 생성날짜
 
     @Builder.Default
@@ -67,6 +72,7 @@ public class Workspace {
                 .description(description)
                 .ownerId(ownerId)
                 .urlSlug(urlSlug)
+                .status(WorkspaceStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .build();
     }
@@ -79,6 +85,14 @@ public class Workspace {
 
         WorkspaceMember member = WorkspaceMember.createOwner(userId, this, nickname, profileImgUrl);
         this.members.add(member);
+    }
+
+    public void changeStatus(WorkspaceStatus status) { // 상태 변경
+        this.status = status;
+    }
+
+    public void increaseRetryCount() { // 재시도 횟수 ++
+        this.retryCount++;
     }
 
 

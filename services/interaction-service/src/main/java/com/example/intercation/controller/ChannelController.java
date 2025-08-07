@@ -45,7 +45,6 @@ public class ChannelController {
                                                     @LoginUserId Long userId) {
 
 
-
         List<ChannelSimpleResponse> channelList = channelService.findChannelsByUserAndWorkspace(workspaceId, userId);
 
         return ResponseEntity.ok(channelList);

@@ -1,7 +1,7 @@
 package com.example.intercation.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -15,11 +15,15 @@ import org.springframework.core.annotation.Order;
 
 @Configuration
 @EnableWebSocketMessageBroker
-@RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE + 99) // Spring Security 필터보다 먼저 실행되도록 순서 보장
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final StompHandler stompHandler; // 위에서 만든 핸들러 주입
+    private final StompHandler stompHandler;
+
+    // @Lazy 어노테이션으로 순환 참조 문제 해결
+    public WebSocketConfig(@Lazy StompHandler stompHandler) {
+        this.stompHandler = stompHandler;
+    }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {

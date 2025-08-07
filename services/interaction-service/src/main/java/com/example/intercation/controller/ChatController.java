@@ -33,11 +33,11 @@ public class ChatController {
 
     @MessageMapping("/chat/{channelId}")
     @Operation(summary = "채팅보내기")
-    public void sendMessage(@DestinationVariable Long channelId,
-                            @Payload ChatMessageRequest request,
+    public void sendMessage(@DestinationVariable Long channelId, //  @PathVariable
+                            @Payload ChatMessageRequest request,  // @RequestBody
                             Principal principal){
 
-        if (principal == null) {
+        if (principal == null) { // 유저 인증 안될시 돌아가
             return;
         }
 

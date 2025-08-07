@@ -8,13 +8,15 @@ import lombok.Setter;
 @Setter
 @Getter
 @Builder
-public class WorkspaceMemberResponse {
+public class WorkspaceMemberResponse { //페인클라이언트로 내보낼 dto
+    private Long userId;
     private String role;
     private String nickname;
     private String profileImgUrl;
 
     public static WorkspaceMemberResponse toResponse(WorkspaceMember workspaceMember) {
         return WorkspaceMemberResponse.builder()
+                .userId(workspaceMember.getUserId())
                 .role(workspaceMember.getRole().name())
                 .nickname(workspaceMember.getNickname())
                 .profileImgUrl(workspaceMember.getProfileImgUrl())

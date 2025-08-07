@@ -44,8 +44,12 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 이 필터 체인은 WebSocket 경로를 제외한 나머지 모든 경로에 적용됨
-                .securityMatcher("/**")
+                // 이 필터 체인은 WebSocket 경로를 제외한 API 경로에만 적용됨
+                .securityMatcher(request -> 
+                    !request.getServletPath().startsWith("/ws-stomp") && 
+                    !request.getServletPath().startsWith("/pub") && 
+                    !request.getServletPath().startsWith("/sub")
+                )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // API는 STATELESS
@@ -57,6 +61,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers("/api/workspace/**").authenticated()
+                        .requestMatchers("/api/workspaces/**").authenticated()
+                        .requestMatchers("/api/channels/**").authenticated() // 채널 관련 API도 인증 필요
                         .anyRequest().authenticated()
                 );
 
