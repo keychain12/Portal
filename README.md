@@ -118,9 +118,9 @@ sequenceDiagram
 - **Email**: Gmail SMTP
 - **Cloud**: AWS (RDS, S3)
 
-## 📋 서비스 상세
+##  서비스 상세
 
-### 🔐 Auth Service (Port: 8081)
+###  Auth Service (Port: 8081)
 **역할**: 사용자 인증 및 권한 관리
 - JWT 기반 인증
 - 사용자 CRUD 작업
@@ -133,7 +133,7 @@ POST /auth/login     # 로그인
 GET  /auth/profile   # 프로필 조회
 ```
 
-### 🏢 Workspace Service (Port: 8082)
+###  Workspace Service (Port: 8082)
 **역할**: 워크스페이스 및 멤버 관리
 - 워크스페이스 생성/수정/조회
 - 멤버 관리 및 초대 시스템
@@ -148,7 +148,7 @@ GET  /api/workspaces/{slug}   # 워크스페이스 상세 조회
 POST /api/invitations/accept  # 초대 수락
 ```
 
-### 💬 Interaction Service (Port: 8083)
+###  Interaction Service (Port: 8083)
 **역할**: 채팅 및 실시간 상호작용
 - 실시간 채팅 (WebSocket/STOMP)
 - 채널 관리
@@ -162,70 +162,25 @@ GET /api/channels/{channelId}/messages         # 채팅 기록
 @MessageMapping("/pub/chat/{channelId}")       # 메시지 발송
 ```
 
-## 🚀 주요 기능
+##  주요 기능
 
-### ✨ 실시간 채팅
+###  실시간 채팅
 - WebSocket/STOMP 기반 실시간 메시징
 - 채널별 메시지 구독
 - 파일 및 이미지 업로드
 - 사용자 온라인 상태 표시
 
-### 🏢 워크스페이스 관리
+###  워크스페이스 관리
 - 워크스페이스 생성 및 관리
 - 멤버 초대 시스템 (이메일)
 - 역할 기반 권한 관리
 - 채널 생성 및 관리
 
-### 🔐 인증 시스템
+###  인증 시스템
 - JWT 기반 인증
 - 세션 관리 (Redis)
 - 사용자 프로필 관리
 
-## 🌐 배포 환경
-
-### 포트 구성
-- **Frontend**: 3000
-- **Auth Service**: 8081
-- **Workspace Service**: 8082
-- **Interaction Service**: 8083
-
-### 외부 서비스
-- **MySQL**: AWS RDS (my-db.chy0kuwimcw9.ap-northeast-2.rds.amazonaws.com)
-- **Redis**: localhost:6379
-- **Kafka**: localhost:9092
-- **S3**: bucket1msa (ap-northeast-2)
-
-## 🚦 시작하기
-
-### Prerequisites
-- Node.js 18+
-- Java 17+
-- MySQL 8.0+
-- Redis
-- Apache Kafka
-
-### Frontend 실행
-```bash
-cd my-vite-app
-npm install
-npm run dev
-```
-
-### Backend 실행
-각 서비스를 개별적으로 실행:
-```bash
-# Auth Service (8081)
-cd services/auth-service
-./gradlew bootRun
-
-# Workspace Service (8082)  
-cd services/workspace-service
-./gradlew bootRun
-
-# Interaction Service (8083)
-cd services/interaction-service
-./gradlew bootRun
-```
 
 ## 프로젝트에 적용한 내용들 ..
 
@@ -259,20 +214,4 @@ https://rose-quesadilla-dab.notion.site/FeignClient-216440d2302f80d28325e79e12c0
 
 https://rose-quesadilla-dab.notion.site/MSA-Saga-245440d2302f80b3a500f636b70e0537?pvs=73
 
----
 
-## 🤝 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 있습니다.
-
-## 📞 연락처
-
-프로젝트 관련 문의사항이 있으시면 GitHub Issues를 통해 연락해 주세요.
