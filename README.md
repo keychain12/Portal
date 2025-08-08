@@ -73,6 +73,10 @@ https://rose-quesadilla-dab.notion.site/Redis-WebSocket-249440d2302f802f922ae295
 
 https://rose-quesadilla-dab.notion.site/with-TransactionalEventListener-215440d2302f804798f4dcb1478ecc3d
 
+![워크스페이스초대](https://github.com/user-attachments/assets/f0b1b801-02be-4591-9c0f-0bf75bc3b77e)
+
+![초대받기](https://github.com/user-attachments/assets/9f0cca63-983d-4941-b583-8b8f20fd86b8)
+
 - 다른 디비 어케조회함? FeignClient를 사용해보자
 
 https://rose-quesadilla-dab.notion.site/FeignClient-216440d2302f80d28325e79e12c010ed?pvs=74
