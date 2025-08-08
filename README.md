@@ -1,57 +1,231 @@
-# Portal: 협업 워크스페이스 플랫폼
+# Portal: 팀 협업 플랫폼
 
-Portal은 Slack과 유사한 팀 협업 및 커뮤니케이션을 위한 마이크로서비스 기반 애플리케이션입니다. 이 프로젝트는 Java, Spring Boot, JPA를 사용하여 개발되었습니다.
+Portal은 실시간 채팅, 워크스페이스 관리, 초대 시스템을 제공하는 마이크로서비스 기반 팀 협업 플랫폼입니다.
 
-## 아키텍처
+## 🏗️ 시스템 아키텍처
 
-이 프로젝트는 마이크로서비스 아키텍처를 따르며, 각 서비스는 특정 기능 분리를 담당합니다. 백엔드 서비스는 다음과 같이 구성됩니다.
+```mermaid
+graph TB
+    %% Client Layer
+    Client[🌐 React Frontend<br/>Port: 3000<br/>Vite + React Router]
+    
+    %% API Gateway or Load Balancer (implied)
+    subgraph "Backend Services"
+        %% Auth Service
+        AuthService[🔐 Auth Service<br/>Port: 8081<br/>JWT Authentication<br/>User Management]
+        
+        %% Workspace Service  
+        WorkspaceService[🏢 Workspace Service<br/>Port: 8082<br/>Workspace CRUD<br/>Member Management<br/>Email Invitations]
+        
+        %% Interaction Service
+        InteractionService[💬 Interaction Service<br/>Port: 8083<br/>Real-time Chat<br/>WebSocket/STOMP<br/>File Upload]
+    end
+    
+    %% Data Layer
+    subgraph "Data Layer"
+        MySQL[(🗄️ MySQL Database<br/>AWS RDS<br/>collabtool)]
+        Redis[(📦 Redis<br/>Port: 6379<br/>Session & Cache)]
+    end
+    
+    %% External Services
+    subgraph "External Services"
+        S3[☁️ AWS S3<br/>bucket1msa<br/>File Storage<br/>Profile Images]
+        Gmail[📧 Gmail SMTP<br/>Email Service<br/>Invitations]
+        Kafka[📨 Apache Kafka<br/>Port: 9092<br/>Event Streaming]
+    end
+    
+    %% Client Connections
+    Client --> AuthService
+    Client --> WorkspaceService  
+    Client --> InteractionService
+    Client -.->|WebSocket/STOMP| InteractionService
+    
+    %% Service to Database
+    AuthService --> MySQL
+    WorkspaceService --> MySQL
+    InteractionService --> MySQL
+    
+    %% Service to Redis
+    AuthService --> Redis
+    WorkspaceService --> Redis
+    InteractionService --> Redis
+    
+    %% External Service Connections
+    WorkspaceService --> Gmail
+    InteractionService --> S3
+    WorkspaceService --> Kafka
+    InteractionService --> Kafka
+    
+    %% Service Communication
+    WorkspaceService -.->|Feign Client| AuthService
+    InteractionService -.->|Feign Client| AuthService
+    InteractionService -.->|Feign Client| WorkspaceService
 
-*   **auth-service:** 사용자 인증 및 인가를 처리합니다.
-*   **interaction-service:** 메시징 및 알림 채널과 같은 실시간 상호작용을 관리합니다.
-*   **workspace-service:** 워크스페이스 및 기타 핵심 비즈니스 로직을 담당합니다.
+    %% Styling
+    classDef serviceBox fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef dataBox fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef externalBox fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef clientBox fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    
+    class AuthService,WorkspaceService,InteractionService serviceBox
+    class MySQL,Redis dataBox
+    class S3,Gmail,Kafka externalBox
+    class Client clientBox
+```
 
-## 기술 스택
+## 📡 실시간 통신 아키텍처
 
-### 공통
-*   Java 20
-*   Spring Boot
-*   Spring Data JPA
-*   Spring Data Redis
-*   MySQL
-*   JWT
-*   Springdoc OpenAPI
-*   Spring Cloud OpenFeign
+```mermaid
+sequenceDiagram
+    participant Client as 클라이언트
+    participant WS as WebSocket Server
+    participant Channel as 채널 구독
+    participant DB as Database
+    
+    Client->>WS: WebSocket 연결 (/ws-stomp)
+    Client->>Channel: 채널 구독 (/sub/channel/{id})
+    Client->>WS: 메시지 발송 (/pub/chat/{channelId})
+    WS->>DB: 메시지 저장
+    WS->>Channel: 구독자들에게 브로드캐스트
+    Channel->>Client: 실시간 메시지 수신
+```
 
-### auth-service
-*   Spring Security
+## 🛠️ 기술 스택
 
-### interaction-service
-*   QueryDSL
-*   AWS S3
-*   Kafka
-*   WebSocket
-*   Spring Mail
+### Frontend
+- **Framework**: React 19.1.0 + Vite 7.0.4
+- **Routing**: React Router DOM 7.7.1
+- **Real-time**: WebSocket (@stomp/stompjs, sockjs-client)
+- **Styling**: Custom theme system
 
-### workspace-service
-*   QueryDSL
-*   AWS S3
-*   Kafka
-*   WebSocket
-*   Spring Mail
+### Backend
+- **Framework**: Spring Boot 3.x
+- **Language**: Java 17+
+- **Architecture**: Microservices
+- **Communication**: 
+  - REST API
+  - WebSocket/STOMP (Real-time)
+  - Feign Client (Inter-service)
+  - Apache Kafka (Event-driven)
 
-## 서비스 상세
+### Database & Storage
+- **Primary DB**: MySQL (AWS RDS)
+- **Cache**: Redis
+- **File Storage**: AWS S3
+- **Message Queue**: Apache Kafka
 
-### Auth Service (인증 서비스)
+### External Services
+- **Email**: Gmail SMTP
+- **Cloud**: AWS (RDS, S3)
 
-*   **설명:** 사용자 회원가입, 로그인 및 인증을 처리합니다. 서비스 간의 안전한 통신을 위해 JWT를 사용합니다.
+## 📋 서비스 상세
 
-### Interaction Service (상호작용 서비스)
+### 🔐 Auth Service (Port: 8081)
+**역할**: 사용자 인증 및 권한 관리
+- JWT 기반 인증
+- 사용자 CRUD 작업
+- Redis를 통한 세션 관리
 
-*   **설명:** 플랫폼 내의 실시간 통신 및 상호작용을 관리합니다. 메시지 전송 및 수신, 파일 공유, 알림 채널과 같은 기능을 포함합니다.
+**주요 API**:
+```
+POST /auth/signup    # 회원가입
+POST /auth/login     # 로그인
+GET  /auth/profile   # 프로필 조회
+```
 
-### Workspace Service (워크스페이스 서비스)
+### 🏢 Workspace Service (Port: 8082)
+**역할**: 워크스페이스 및 멤버 관리
+- 워크스페이스 생성/수정/조회
+- 멤버 관리 및 초대 시스템
+- 이메일 발송 (Gmail SMTP)
+- Kafka를 통한 이벤트 발행
 
-*   **설명:** 워크스페이스, 채널 생성 및 관리, 워크스페이스 내 사용자 역할 등 애플리케이션의 핵심 비즈니스 로직을 관리합니다.
+**주요 API**:
+```
+POST /api/workspaces          # 워크스페이스 생성
+GET  /api/workspaces          # 내 워크스페이스 목록
+GET  /api/workspaces/{slug}   # 워크스페이스 상세 조회
+POST /api/invitations/accept  # 초대 수락
+```
+
+### 💬 Interaction Service (Port: 8083)
+**역할**: 채팅 및 실시간 상호작용
+- 실시간 채팅 (WebSocket/STOMP)
+- 채널 관리
+- 사용자 상태 관리 (온라인/오프라인)
+- 파일 업로드 (S3)
+
+**주요 API**:
+```
+WebSocket: /ws-stomp                           # WebSocket 연결
+GET /api/channels/{channelId}/messages         # 채팅 기록
+@MessageMapping("/pub/chat/{channelId}")       # 메시지 발송
+```
+
+## 🚀 주요 기능
+
+### ✨ 실시간 채팅
+- WebSocket/STOMP 기반 실시간 메시징
+- 채널별 메시지 구독
+- 파일 및 이미지 업로드
+- 사용자 온라인 상태 표시
+
+### 🏢 워크스페이스 관리
+- 워크스페이스 생성 및 관리
+- 멤버 초대 시스템 (이메일)
+- 역할 기반 권한 관리
+- 채널 생성 및 관리
+
+### 🔐 인증 시스템
+- JWT 기반 인증
+- 세션 관리 (Redis)
+- 사용자 프로필 관리
+
+## 🌐 배포 환경
+
+### 포트 구성
+- **Frontend**: 3000
+- **Auth Service**: 8081
+- **Workspace Service**: 8082
+- **Interaction Service**: 8083
+
+### 외부 서비스
+- **MySQL**: AWS RDS (my-db.chy0kuwimcw9.ap-northeast-2.rds.amazonaws.com)
+- **Redis**: localhost:6379
+- **Kafka**: localhost:9092
+- **S3**: bucket1msa (ap-northeast-2)
+
+## 🚦 시작하기
+
+### Prerequisites
+- Node.js 18+
+- Java 17+
+- MySQL 8.0+
+- Redis
+- Apache Kafka
+
+### Frontend 실행
+```bash
+cd my-vite-app
+npm install
+npm run dev
+```
+
+### Backend 실행
+각 서비스를 개별적으로 실행:
+```bash
+# Auth Service (8081)
+cd services/auth-service
+./gradlew bootRun
+
+# Workspace Service (8082)  
+cd services/workspace-service
+./gradlew bootRun
+
+# Interaction Service (8083)
+cd services/interaction-service
+./gradlew bootRun
+```
 
 ## 프로젝트에 적용한 내용들 ..
 
@@ -85,4 +259,20 @@ https://rose-quesadilla-dab.notion.site/FeignClient-216440d2302f80d28325e79e12c0
 
 https://rose-quesadilla-dab.notion.site/MSA-Saga-245440d2302f80b3a500f636b70e0537?pvs=73
 
+---
 
+## 🤝 기여하기
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 있습니다.
+
+## 📞 연락처
+
+프로젝트 관련 문의사항이 있으시면 GitHub Issues를 통해 연락해 주세요.
