@@ -63,6 +63,12 @@ https://rose-quesadilla-dab.notion.site/DDD-215440d2302f8066bc05cb36fb286376?pvs
 
 https://rose-quesadilla-dab.notion.site/Redis-224440d2302f80799d38cdfd69f6b6cf
 
+- Redis+WebSocket으로 실시간 사용자 상태 리팩토링하기 
+
+https://rose-quesadilla-dab.notion.site/Redis-WebSocket-249440d2302f802f922ae2952c94bd95
+
+![ㅁㄴㅇㄹ](https://github.com/user-attachments/assets/61d51698-fecc-4b44-aec1-baeacae56da7)
+
 - 워크스페이스 초대 메일 발송 with @TransactionalEventListener
 
 https://rose-quesadilla-dab.notion.site/with-TransactionalEventListener-215440d2302f804798f4dcb1478ecc3d
