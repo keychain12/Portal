@@ -2,6 +2,7 @@ package com.example.workspaceservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.AbstractAggregateRoot;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
-public class Workspace {
+public class Workspace extends AbstractAggregateRoot<Workspace> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -89,6 +90,16 @@ public class Workspace {
 
     public void changeStatus(WorkspaceStatus status) { // 상태 변경
         this.status = status;
+    }
+
+    public void activate() {
+        if (this.status != WorkspaceStatus.PENDING) {
+            throw new IllegalArgumentException("PENDING 상태 에서만 활성가능");
+        }
+        if (this.members.isEmpty()) {
+            throw new IllegalArgumentException("최소 맴버 1명 필요 ");
+        }
+        this.status = WorkspaceStatus.ACTIVE;
     }
 
     public void increaseRetryCount() { // 재시도 횟수 ++

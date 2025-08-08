@@ -60,7 +60,7 @@ public class WorkspaceService {
 
     //내 워크 스페이스 목록조회
     @Transactional(readOnly = true)
-    @Cacheable(value = "workspaces" ,key = "#userId")
+//    @Cacheable(value = "workspaces" ,key = "#userId")
     public Page<WorkspaceResponse> getMyWorkspace(Long userId, Pageable pageable) {
         return workspaceRepository.findAllByUserId(userId, pageable);
     }

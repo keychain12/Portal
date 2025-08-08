@@ -58,7 +58,6 @@ class StompHandler implements ChannelInterceptor {
         String jwtToken = accessor.getFirstNativeHeader(AUTHORIZATION_HEADER);
         String workspaceId = accessor.getFirstNativeHeader(WORKSPACE_ID_HEADER);
 
-        // ... Guard Clause 로직은 그대로 유지 ...
         if (workspaceId == null || jwtToken == null || !jwtToken.startsWith(BEARER_PREFIX)) {
             log.warn(" 여결 안됨. workspaceId: {}, token: {}", workspaceId, jwtToken);
             return;

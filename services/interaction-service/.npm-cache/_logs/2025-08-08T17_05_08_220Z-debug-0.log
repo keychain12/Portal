@@ -1,0 +1,33 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.2
+2 info using node@v22.14.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/green/.npmrc
+5 silly config load:file:/usr/local/etc/npmrc
+6 verbose title npm view @anthropic-ai/claude-code@latest version
+7 verbose argv "view" "@anthropic-ai/claude-code@latest" "version"
+8 verbose logfile logs-max:10 dir:/Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-08T17_05_08_220Z-
+9 verbose logfile /Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-08T17_05_08_220Z-debug-0.log
+10 silly logfile start cleaning logs, removing 2 files
+11 silly logfile done cleaning log files
+12 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code 161ms (cache revalidated)
+13 verbose type system
+14 verbose stack FetchError: Invalid response body while trying to fetch https://registry.npmjs.org/@anthropic-ai%2fclaude-code: sha512-0+mnFd3g+OZrRhgYdxVdOSKkvKQlfMerS8zEp/kODP72sLYAWqQ03Z/s5tTUmttUYinJyN804BXslHqT7ReL4Q== integrity checksum failed when using sha512: wanted sha512-0+mnFd3g+OZrRhgYdxVdOSKkvKQlfMerS8zEp/kODP72sLYAWqQ03Z/s5tTUmttUYinJyN804BXslHqT7ReL4Q== but got sha512-z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==. (0 bytes)
+14 verbose stack     at /usr/local/lib/node_modules/npm/node_modules/minipass-fetch/lib/body.js:170:15
+14 verbose stack     at async Response.json (/usr/local/lib/node_modules/npm/node_modules/minipass-fetch/lib/body.js:75:17)
+14 verbose stack     at async RegistryFetcher.packument (/usr/local/lib/node_modules/npm/node_modules/pacote/lib/registry.js:98:25)
+14 verbose stack     at async #getData (/usr/local/lib/node_modules/npm/lib/commands/view.js:135:20)
+14 verbose stack     at async #viewPackage (/usr/local/lib/node_modules/npm/lib/commands/view.js:112:28)
+14 verbose stack     at async View.exec (/usr/local/lib/node_modules/npm/lib/commands/view.js:70:5)
+14 verbose stack     at async Npm.exec (/usr/local/lib/node_modules/npm/lib/npm.js:207:9)
+14 verbose stack     at async module.exports (/usr/local/lib/node_modules/npm/lib/cli/entry.js:74:5)
+15 error code EINTEGRITY
+16 error errno EINTEGRITY
+17 error Invalid response body while trying to fetch https://registry.npmjs.org/@anthropic-ai%2fclaude-code: sha512-0+mnFd3g+OZrRhgYdxVdOSKkvKQlfMerS8zEp/kODP72sLYAWqQ03Z/s5tTUmttUYinJyN804BXslHqT7ReL4Q== integrity checksum failed when using sha512: wanted sha512-0+mnFd3g+OZrRhgYdxVdOSKkvKQlfMerS8zEp/kODP72sLYAWqQ03Z/s5tTUmttUYinJyN804BXslHqT7ReL4Q== but got sha512-z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==. (0 bytes)
+18 verbose cwd /Users/green/Portal/services/interaction-service
+19 verbose os Darwin 23.5.0
+20 verbose node v22.14.0
+21 verbose npm  v10.9.2
+22 verbose exit 1
+23 verbose code 1
+24 error A complete log of this run can be found in: /Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-08T17_05_08_220Z-debug-0.log

@@ -15,7 +15,7 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // 모든 요청에 대해
                         .allowedOrigins("http://localhost:3000") // 프론트 주소
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // 허용할 메서드
+                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS") // 허용할 메서드
                         .allowedHeaders("*") // 모든 헤더 허용
                         .exposedHeaders("Authorization") // 응답 헤더 노출
                         .allowCredentials(true); // 인증정보 포함 허용

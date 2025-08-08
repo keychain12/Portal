@@ -37,12 +37,9 @@ public class InvitationService {
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceInvitationRepository invitationRepository;
     private final WorkspaceMemberRepository memberRepository;
+    private final S3Service s3Service;
 
-    @Value("${spring.app.base-url}")
-    private String appBaseUrl; // 프론트엔드 URL
 
-    @Value("${spring.app.default-profile-image-url}")
-    private String defaultProfileImageUrl;
 
     public InvitationDetailsResponse getInvitationDetails(String token) {
         // 1. 토큰 파싱
@@ -66,7 +63,7 @@ public class InvitationService {
         return new InvitationDetailsResponse(workspace.getName(), email);
     }
     @Transactional
-    public WorkspaceJoinResponse acceptInvitation(String invitationToken, Long userId) {
+    public WorkspaceJoinResponse acceptInvitation(String invitationToken, Long userId, String nickname, MultipartFile profileImage) throws IOException {
         // 1. 토큰 파싱
         JwtUtil.InvitationPayload payload = jwtUtil.parseInvitationToken(invitationToken);
         Long workspaceId = payload.getWorkspaceId();
@@ -96,9 +93,14 @@ public class InvitationService {
         if (memberRepository.existsByWorkspaceIdAndUserId(workspace.getId(), userId)) {
             return new WorkspaceJoinResponse(workspace.getUrlSlug(), "이미 참여중인 워크스페이스입니다.");
         }
-        // 워크스페이스멤버 정적팩토리메서드
-        WorkspaceMember newMember = WorkspaceMember.createMember(userId, workspace, user.getUsername(), defaultProfileImageUrl);
-            //저장
+
+        // 먼저 S3 업로드를 처리
+        String profileImageUrl = s3Service.upload(profileImage);
+
+        // 데이터베이스 작업
+        // 워크스페이스멤버 정적팩토리메서드 - 닉네임과 프로필 이미지 URL 사용
+        WorkspaceMember newMember = WorkspaceMember.createMember(userId, workspace, nickname, profileImageUrl);
+        //저장
         memberRepository.save(newMember);
         // 초대 상태 변경
         invitation.accept();
