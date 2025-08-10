@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom';
 import theme from '../theme';
 import Input from '../components/Input';
+// FileUpload 컴포넌트 대신 인라인 구현으로 변경
+import ImageModal from '../components/ImageModal';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -19,20 +21,33 @@ const WorkspaceDetailPage = () => {
   const [newChannelName, setNewChannelName] = useState('');
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
+  // 기본 상태로 복원
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [hoveredChannel, setHoveredChannel] = useState(null);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  // showFileUpload 상태 제거 - 인라인으로 대체
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [dragOver, setDragOver] = useState(false);
+  const [isComposing, setIsComposing] = useState(false); // 한글 입력 상태 추적
+  const [imageModal, setImageModal] = useState({ isOpen: false, src: '', alt: '', images: [], currentIndex: 0 });
   const messagesEndRef = useRef(null);
   const stompClientRef = useRef(null);
 
   // 메모이제이션된 값들
   const channelCount = useMemo(() => channels.length, [channels.length]);
   const hasMessages = useMemo(() => messages.length > 0, [messages.length]);
-  const canSendMessage = useMemo(() => 
-    messageInput.trim() && selectedChannel && !isSending, 
-    [messageInput, selectedChannel, isSending]
-  );
+  const canSendMessage = useMemo(() => {
+    const result = (messageInput.trim() || selectedFiles.length > 0) && selectedChannel && !isSending;
+    console.log('canSendMessage 계산:', {
+      messageInput: messageInput.trim(),
+      selectedFilesCount: selectedFiles.length,
+      hasSelectedChannel: !!selectedChannel,
+      isSending,
+      result
+    });
+    return result;
+  }, [messageInput, selectedFiles.length, selectedChannel, isSending]);
 
   // 워크스페이스 멤버 상태 가져오기 함수
   const fetchMemberStatuses = useCallback(async (workspaceId) => {
@@ -472,9 +487,95 @@ const WorkspaceDetailPage = () => {
     }
   }, [messages]);
 
+  // 파일 업로드 도우미 함수들
+  const processFiles = useCallback(async (files) => {
+    const fileArray = Array.from(files);
+    const newFiles = [];
+    
+    for (const file of fileArray) {
+      const fileId = Date.now() + Math.random();
+      let preview = null;
+      const isImage = file.type.startsWith('image/');
+      
+      // 이미지 예보기 생성
+      if (isImage) {
+        preview = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      }
+      
+      // 파일 타입별 아이콘
+      let icon = '📄';
+      if (isImage) icon = '🖼️';
+      else if (file.type.includes('pdf')) icon = '📄';
+      else if (file.type.includes('video')) icon = '🎥';
+      else if (file.type.includes('audio')) icon = '🎵';
+      else if (file.type.includes('zip') || file.type.includes('rar')) icon = '🗁️';
+      
+      newFiles.push({
+        id: fileId,
+        file,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        icon,
+        preview,
+        isImage
+      });
+    }
+    
+    setSelectedFiles(prev => [...prev, ...newFiles]);
+  }, []);
+  
+  // 드래그 앤 드롭 핸들러들
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(true);
+  }, []);
+  
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setDragOver(false);
+    }
+  }, []);
+  
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      console.log('드롭된 파일 수:', files.length);
+      processFiles(files);
+    }
+  }, [processFiles]);
+  
+  // 파일 선택 핸들러 (클립 버튼용)
+  const handleFileButtonClick = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = '*/*';
+    input.onchange = (e) => {
+      if (e.target.files.length > 0) {
+        console.log('파일 버튼으로 선택된 파일 수:', e.target.files.length);
+        processFiles(e.target.files);
+      }
+    };
+    input.click();
+  }, [processFiles]);
+
   // 메시지 전송 함수를 메모이제이션
   const handleSendMessage = useCallback(async () => {
-    if (!canSendMessage) return;
+    // 파일만 있는 경우도 전송 가능하도록 수정
+    if (!messageInput.trim() && selectedFiles.length === 0) return;
+    if (!selectedChannel || isSending) return;
     
     // WebSocket 연결 상태 확인
     if (!stompClientRef.current?.connected) {
@@ -483,29 +584,61 @@ const WorkspaceDetailPage = () => {
     }
     
     setIsSending(true);
-    const messageContent = messageInput.trim();
-    setMessageInput(''); // 즉시 입력창 클리어
+    const messageContent = messageInput.trim(); // 다시 textarea 사용
+    setMessageInput(''); // 입력창 클리어
     
     try {
-      // WebSocket을 통해 메시지 전송 (백엔드 ChatMessageRequest 형식에 맞춤)
-      const messageRequest = {
-        content: messageContent,
-        messageType: 'TEXT', // MessageType enum 값
-        channelId: selectedChannel.id // 명시적으로 channelId 추가
-      };
+      // 파일과 텍스트를 함께 처리 (슬랙 스타일)
+      if (selectedFiles.length > 0) {
+        // 1. 먼저 모든 파일을 S3에 업로드 후 메시지 전송
+        console.log('파일 업로드 시작...');
+        for (const fileData of selectedFiles) {
+          console.log('파일 업로드 중:', fileData.name);
+          const fileUrl = await uploadFileToS3(fileData.file);
+          
+          // 파일 메시지 전송
+          const fileMessageRequest = {
+            content: fileUrl,
+            messageType: fileData.type.startsWith('image/') ? 'IMAGE' : 'FILE',
+            fileName: fileData.name,
+            fileSize: fileData.size
+          };
 
-      stompClientRef.current.publish({
-        destination: `/pub/chat/${selectedChannel.id}`,
-        body: JSON.stringify(messageRequest),
-        headers: {
-          'workspaceId': workspace.id.toString(),
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          stompClientRef.current.publish({
+            destination: `/pub/chat/${selectedChannel.id}`,
+            body: JSON.stringify(fileMessageRequest),
+            headers: {
+              'workspaceId': workspace.id.toString(),
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+          });
         }
-      });
+        
+        setSelectedFiles([]); // 파일 목록 지우기
+        console.log('파일 메시지 전송 완료');
+      }
+
+      // 텍스트 메시지가 있는 경우 전송
+      if (messageContent) {
+        const messageRequest = {
+          content: messageContent,
+          messageType: 'TEXT',
+          channelId: selectedChannel.id
+        };
+
+        stompClientRef.current.publish({
+          destination: `/pub/chat/${selectedChannel.id}`,
+          body: JSON.stringify(messageRequest),
+          headers: {
+            'workspaceId': workspace.id.toString(),
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+      }
 
     } catch (error) {
       console.error('메시지 전송 실패:', error);
-      // 실패 시 입력창에 메시지 복원
+      // 실패 시 메시지 복원
       setMessageInput(messageContent);
       alert('메시지 전송에 실패했습니다. 다시 시도해주세요.');
     } finally {
@@ -576,6 +709,166 @@ const WorkspaceDetailPage = () => {
       alert('채널 생성 중 오류가 발생했습니다.');
     }
   }, [newChannelName, workspace?.id, navigate]);
+
+  // 파일 업로드 함수 (S3 직접 업로드)
+  const handleFileUpload = useCallback(async (file, updateProgress) => {
+    if (!file || !selectedChannel?.id) return;
+
+    const authToken = localStorage.getItem('authToken');
+
+    try {
+      // 프로그레스 시작
+      updateProgress(10);
+
+      // 1단계: Presigned URL 생성
+      const response = await fetch(`http://localhost:8083/api/files/upload?filename=${encodeURIComponent(file.name)}`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Presigned URL 생성 실패');
+      }
+
+      const presignedUrl = await response.text();
+      updateProgress(30);
+
+      // 2단계: S3에 파일 업로드
+      const uploadResponse = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('파일 업로드 실패');
+      }
+
+      updateProgress(70);
+
+      // 3단계: 업로드된 파일 URL 추출 (쿼리 파라미터 제거)
+      const fileUrl = presignedUrl.split('?')[0];
+
+      // 4단계: 파일 메시지 전송
+      const messageType = file.type.startsWith('image/') ? 'IMAGE' : 'FILE';
+      const messageRequest = {
+        content: fileUrl,
+        messageType: messageType,
+        fileName: file.name,
+        fileSize: file.size
+      };
+
+      stompClientRef.current.publish({
+        destination: `/pub/chat/${selectedChannel.id}`,
+        body: JSON.stringify(messageRequest),
+        headers: {
+          'workspaceId': workspace.id.toString(),
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+
+      updateProgress(100);
+      console.log('파일 메시지 전송 성공:', messageRequest);
+    } catch (error) {
+      console.error('파일 업로드 실패:', error);
+      throw error; // 에러를 다시 던져서 FileUpload 컴포넌트가 처리하게 함
+    }
+  }, [selectedChannel?.id, workspace?.id]);
+
+  // 마크다운 기능 제거
+
+  // S3에만 업로드하는 헬퍼 함수 (메시지 전송 X)
+  const uploadFileToS3 = useCallback(async (file) => {
+    const authToken = localStorage.getItem('authToken');
+    
+    // 1단계: Presigned URL 생성
+    const response = await fetch(`http://localhost:8083/api/files/upload?filename=${encodeURIComponent(file.name)}`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Presigned URL 생성 실패');
+    }
+
+    const presignedUrl = await response.text();
+
+    // 2단계: S3에 파일 업로드
+    const uploadResponse = await fetch(presignedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': file.type,
+      },
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error('파일 업로드 실패');
+    }
+
+    // 3단계: 업로드된 파일 URL 반환 (쿼리 파라미터 제거)
+    return presignedUrl.split('?')[0];
+  }, []);
+
+  // 이미지 모달 열기 함수
+  const openImageModal = useCallback((imageSrc, imageAlt, allImages = [], currentIndex = 0) => {
+    setImageModal({
+      isOpen: true,
+      src: imageSrc,
+      alt: imageAlt,
+      images: allImages,
+      currentIndex: currentIndex
+    });
+  }, []);
+
+  // 이미지 모달 이전/다음 함수
+  const handleModalPrevious = useCallback(() => {
+    setImageModal(prev => {
+      if (prev.currentIndex > 0) {
+        const newIndex = prev.currentIndex - 1;
+        return {
+          ...prev,
+          currentIndex: newIndex,
+          src: prev.images[newIndex]?.src || prev.src,
+          alt: prev.images[newIndex]?.alt || prev.alt
+        };
+      }
+      return prev;
+    });
+  }, []);
+
+  const handleModalNext = useCallback(() => {
+    setImageModal(prev => {
+      if (prev.currentIndex < prev.images.length - 1) {
+        const newIndex = prev.currentIndex + 1;
+        return {
+          ...prev,
+          currentIndex: newIndex,
+          src: prev.images[newIndex]?.src || prev.src,
+          alt: prev.images[newIndex]?.alt || prev.alt
+        };
+      }
+      return prev;
+    });
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setImageModal({ isOpen: false, src: '', alt: '', images: [], currentIndex: 0 });
+  }, []);
+
+  // 채팅 메시지의 이미지 클릭 핸들러
+  const handleMessageImageClick = useCallback((imageSrc, imageAlt) => {
+    // 현재 채널의 모든 이미지 메시지를 수집
+    const imageMessages = messages.filter(msg => msg.messageType === 'IMAGE');
+    const images = imageMessages.map(msg => ({ src: msg.content, alt: msg.fileName || 'Image' }));
+    const currentIndex = images.findIndex(img => img.src === imageSrc);
+    
+    openImageModal(imageSrc, imageAlt, images, Math.max(0, currentIndex));
+  }, [messages, openImageModal]);
 
   // 로그아웃 메뉴 외부 클릭 시 닫기
   useEffect(() => {
@@ -1726,16 +2019,95 @@ const WorkspaceDetailPage = () => {
                           gap: theme.spacing[1]
                         }}>
                           {group.messages.map((message) => (
-                            <div
-                              key={message.id}
-                              style={{
-                                fontSize: theme.typography.fontSize.sm,
-                                lineHeight: theme.typography.lineHeight.relaxed,
-                                color: theme.colors.text.primary,
-                                wordBreak: 'break-word'
-                              }}
-                            >
-                              {message.content}
+                            <div key={message.id}>
+                              {message.messageType === 'IMAGE' ? (
+                                <div style={{
+                                  marginTop: theme.spacing[2]
+                                }}>
+                                  <img
+                                    src={message.content}
+                                    alt={message.fileName || 'Image'}
+                                    style={{
+                                      maxWidth: '300px',
+                                      maxHeight: '200px',
+                                      borderRadius: theme.borderRadius.md,
+                                      cursor: 'pointer',
+                                      objectFit: 'cover'
+                                    }}
+                                    onClick={() => handleMessageImageClick(message.content, message.fileName || 'Image')}
+                                  />
+                                  {message.fileName && (
+                                    <div style={{
+                                      fontSize: theme.typography.fontSize.xs,
+                                      color: theme.colors.text.muted,
+                                      marginTop: theme.spacing[1]
+                                    }}>
+                                      {message.fileName} ({Math.round((message.fileSize || 0) / 1024)}KB)
+                                    </div>
+                                  )}
+                                </div>
+                              ) : message.messageType === 'FILE' ? (
+                                <div style={{
+                                  padding: theme.spacing[3],
+                                  backgroundColor: theme.colors.surface.default,
+                                  borderRadius: theme.borderRadius.md,
+                                  border: `1px solid ${theme.colors.surface.border}`,
+                                  marginTop: theme.spacing[2],
+                                  maxWidth: '300px'
+                                }}>
+                                  <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: theme.spacing[2]
+                                  }}>
+                                    <div style={{
+                                      fontSize: theme.typography.fontSize.lg
+                                    }}>
+                                      📎
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                      <div style={{
+                                        fontSize: theme.typography.fontSize.sm,
+                                        fontWeight: theme.typography.fontWeight.medium,
+                                        color: theme.colors.text.primary,
+                                        marginBottom: theme.spacing[1],
+                                        wordBreak: 'break-word'
+                                      }}>
+                                        {message.fileName}
+                                      </div>
+                                      <div style={{
+                                        fontSize: theme.typography.fontSize.xs,
+                                        color: theme.colors.text.secondary
+                                      }}>
+                                        {Math.round((message.fileSize || 0) / 1024)}KB
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={() => window.open(message.content, '_blank')}
+                                      style={{
+                                        padding: theme.spacing[2],
+                                        backgroundColor: theme.colors.primary.brand,
+                                        color: theme.colors.text.primary,
+                                        border: 'none',
+                                        borderRadius: theme.borderRadius.sm,
+                                        fontSize: theme.typography.fontSize.xs,
+                                        cursor: 'pointer'
+                                      }}
+                                    >
+                                      다운로드
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div style={{
+                                  fontSize: theme.typography.fontSize.sm,
+                                  lineHeight: theme.typography.lineHeight.relaxed,
+                                  color: theme.colors.text.primary,
+                                  wordBreak: 'break-word'
+                                }}>
+                                  {message.content}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -1857,31 +2229,193 @@ const WorkspaceDetailPage = () => {
 
         {/* Slack-style Message Input */}
         {selectedChannel && (
-          <div style={{
-            padding: `${theme.spacing[4]} ${theme.spacing[6]}`,
-            backgroundColor: theme.colors.background.secondary,
-            borderTop: `1px solid ${theme.colors.surface.border}`
-          }}>
+          <div 
+            style={{
+              padding: `${theme.spacing[4]} ${theme.spacing[6]}`,
+              backgroundColor: dragOver 
+                ? theme.colors.primary.brand + '10' 
+                : theme.colors.background.secondary,
+              borderTop: `1px solid ${theme.colors.surface.border}`,
+              border: dragOver 
+                ? `2px dashed ${theme.colors.primary.brand}` 
+                : 'none',
+              borderTop: `1px solid ${theme.colors.surface.border}`,
+              transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.ease}`,
+              position: 'relative'
+            }}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {dragOver && (
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: theme.colors.primary.brand + '20',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: theme.typography.fontSize.lg,
+                color: theme.colors.primary.brand,
+                fontWeight: theme.typography.fontWeight.semibold,
+                pointerEvents: 'none',
+                zIndex: 10
+              }}>
+                파일을 여기에 놓아주세요 📁
+              </div>
+            )}
+            {/* 슬랙 스타일 인라인 파일 업로드 */}
+            {selectedFiles.length > 0 && (
+              <div style={{
+                marginBottom: theme.spacing[2],
+                padding: theme.spacing[2],
+                backgroundColor: theme.colors.surface.default,
+                borderRadius: theme.borderRadius.sm,
+                border: `1px solid ${theme.colors.surface.border}`,
+                display: 'flex',
+                gap: theme.spacing[2],
+                flexWrap: 'wrap',
+                alignItems: 'center'
+              }}>
+                {selectedFiles.map(file => (
+                  <div key={file.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: theme.spacing[2],
+                    padding: theme.spacing[1],
+                    backgroundColor: theme.colors.background.primary,
+                    borderRadius: theme.borderRadius.sm,
+                    fontSize: theme.typography.fontSize.sm
+                  }}>
+                    {file.isImage ? (
+                      <img 
+                        src={file.preview} 
+                        alt={file.name}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          objectFit: 'cover',
+                          borderRadius: theme.borderRadius.sm
+                        }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: '16px' }}>{file.icon}</span>
+                    )}
+                    <span style={{
+                      maxWidth: '120px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      color: theme.colors.text.primary
+                    }}>
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const newFiles = selectedFiles.filter(f => f.id !== file.id);
+                        setSelectedFiles(newFiles);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: theme.colors.text.secondary,
+                        cursor: 'pointer',
+                        fontSize: theme.typography.fontSize.sm,
+                        padding: theme.spacing[1]
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => setSelectedFiles([])}
+                  style={{
+                    background: 'none',
+                    border: `1px solid ${theme.colors.surface.border}`,
+                    borderRadius: theme.borderRadius.sm,
+                    padding: `${theme.spacing[1]} ${theme.spacing[2]}`,
+                    fontSize: theme.typography.fontSize.xs,
+                    color: theme.colors.text.secondary,
+                    cursor: 'pointer'
+                  }}
+                >
+                  전체 삭제
+                </button>
+              </div>
+            )}
+
+            {/* 디버그: selectedFiles.length = {selectedFiles.length}, canSendMessage = {canSendMessage ? 'true' : 'false'} */}
+            
+            {/* 선택된 파일 정보 표시 */}
+            {selectedFiles.length > 0 && (
+              <div style={{
+                marginBottom: theme.spacing[3],
+                padding: theme.spacing[3],
+                backgroundColor: theme.colors.primary.brand + '10',
+                borderRadius: theme.borderRadius.md,
+                border: `1px solid ${theme.colors.primary.brand}30`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: theme.spacing[2]
+              }}>
+                <span style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.primary.brand,
+                  fontWeight: theme.typography.fontWeight.medium
+                }}>
+                  파일 {selectedFiles.length}개 선택됨
+                </span>
+                <button
+                  onClick={() => {
+                    setSelectedFiles([]);
+                    setShowFileUpload(false);
+                  }}
+                  style={{
+                    padding: `${theme.spacing[1]} ${theme.spacing[2]}`,
+                    backgroundColor: 'transparent',
+                    border: `1px solid ${theme.colors.primary.brand}`,
+                    borderRadius: theme.borderRadius.sm,
+                    color: theme.colors.primary.brand,
+                    fontSize: theme.typography.fontSize.xs,
+                    cursor: 'pointer'
+                  }}
+                >
+                  취소
+                </button>
+              </div>
+            )}
+
             <div style={{
               display: 'flex',
-              alignItems: 'center',
-              gap: theme.spacing[2]
+              alignItems: 'flex-end', // 하단 정렬로 변경
+              gap: theme.spacing[2],
+              minHeight: '40px' // 최소 높이 보장
             }}>
               <div style={{
                 flexGrow: 1,
-                position: 'relative'
+                position: 'relative',
+                minWidth: 0 // flexbox 오버플로우 방지
               }}>
                 <Input
                   type="text"
-                  placeholder={`#${selectedChannel.name || selectedChannel.channelName} 에 메시지 보내기`}
+                  placeholder={selectedFiles.length > 0 
+                    ? `파일과 함께 메시지 보내기 (Enter)` 
+                    : `#${selectedChannel.name || selectedChannel.channelName} 에 메시지 보내기`}
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !isComposing) {
                       e.preventDefault();
                       handleSendMessage();
                     }
                   }}
+                  onCompositionStart={() => setIsComposing(true)}
+                  onCompositionEnd={() => setIsComposing(false)}
+                  disabled={isSending}
                   style={{
                     width: '100%',
                     padding: `${theme.spacing[3]} ${theme.spacing[4]}`,
@@ -1923,29 +2457,39 @@ const WorkspaceDetailPage = () => {
                 )}
               </div>
               
-              <button style={{
-                padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
-                borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.colors.background.primary,
-                border: 'none',
-                color: theme.colors.text.secondary,
-                cursor: 'pointer',
-                fontSize: theme.typography.fontSize.base,
-                transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.ease}`
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = theme.colors.surface.hover;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = theme.colors.background.primary;
-              }}
+              <button 
+                onClick={handleFileButtonClick}
+                style={{
+                  padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
+                  borderRadius: theme.borderRadius.md,
+                  backgroundColor: theme.colors.background.primary,
+                  border: 'none',
+                  color: theme.colors.text.secondary,
+                  cursor: 'pointer',
+                  fontSize: theme.typography.fontSize.base,
+                  transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.ease}`
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.colors.surface.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.colors.background.primary;
+                }}
               >
                 📎
               </button>
               
-              {canSendMessage && (
+              {/* 전송 버튼 - 고정 크기로 만들기 */}
+              <div style={{
+                minWidth: '80px', // 최소 넓이 보장
+                flexShrink: 0 // 축소 방지
+              }}>
+                {(messageInput.trim() || selectedFiles.length > 0) ? (
                 <button 
-                  onClick={handleSendMessage}
+                  onClick={() => {
+                    console.log('전송 버튼 클릭');
+                    handleSendMessage();
+                  }}
                   disabled={isSending}
                   style={{
                     padding: `${theme.spacing[2]} ${theme.spacing[4]}`,
@@ -1968,13 +2512,36 @@ const WorkspaceDetailPage = () => {
                     e.currentTarget.style.backgroundColor = theme.colors.surface.active;
                   }}
                 >
-                  {isSending ? '전송 중...' : '전송'}
+                  {isSending 
+                    ? '전송 중...' 
+                    : selectedFiles.length > 0 
+                      ? `파일 ${selectedFiles.length}개 전송` 
+                      : '전송'
+                  }
                 </button>
-              )}
+                ) : (
+                  <div style={{
+                    width: '80px',
+                    height: '40px' // 비어있는 공간 보장
+                  }}></div>
+                )}
+              </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* 이미지 모달 */}
+      <ImageModal
+        isOpen={imageModal.isOpen}
+        onClose={handleModalClose}
+        imageSrc={imageModal.src}
+        imageAlt={imageModal.alt}
+        images={imageModal.images}
+        currentIndex={imageModal.currentIndex}
+        onPrevious={handleModalPrevious}
+        onNext={handleModalNext}
+      />
     </div>
   );
 };

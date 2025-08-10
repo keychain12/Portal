@@ -17,14 +17,13 @@ public class WorkspaceMember {
     private Long userId;   // 유저 id
 
     @Enumerated(EnumType.STRING)
-    private WorkspaceRole role; // 역할
+    private WorkspaceRole workspaceRole; // 역할 / 오너 ,맴버, 게스트
 
     @Column(nullable = false)
     private String nickname;  // 유저닉네임
 
     @Column(length = 1024)
     private String profileImgUrl; // 유저 프로필사진 s3 url
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id")
@@ -35,7 +34,7 @@ public class WorkspaceMember {
        return WorkspaceMember.builder()
                 .userId(userId)
                 .workspace(workspace)
-                .role(WorkspaceRole.OWNER)
+                .workspaceRole(WorkspaceRole.OWNER)
                 .nickname(nickname)
                 .profileImgUrl(profileImgUrl)
                 .build();
@@ -45,7 +44,7 @@ public class WorkspaceMember {
         return WorkspaceMember.builder()
                 .userId(userId)
                 .workspace(workspace)
-                .role(WorkspaceRole.MEMBER)
+                .workspaceRole(WorkspaceRole.MEMBER)
                 .nickname(nickname)
                 .profileImgUrl(profileImgUrl)
                 .build();

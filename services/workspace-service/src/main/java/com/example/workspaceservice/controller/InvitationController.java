@@ -30,7 +30,7 @@ import java.util.Map;
 public class InvitationController {
 
     private final InvitationService invitationService;
-
+        //Todo 수정삭제권환,DM 기능
 
     @GetMapping("/{token}")
     @Operation(summary = "초대 정보 조회", description = "토큰으로 초대 정보를 조회합니다.")

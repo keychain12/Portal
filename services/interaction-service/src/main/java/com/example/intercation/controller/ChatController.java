@@ -2,9 +2,8 @@ package com.example.intercation.controller;
 
 import com.example.intercation.dto.request.ChatMessageRequest;
 import com.example.intercation.dto.response.ChatMessageResponse;
-import com.example.intercation.entity.UserDetailsImpl;
+import com.example.intercation.util.UserDetailsImpl;
 import com.example.intercation.service.ChatService;
-import feign.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,17 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-
-import static org.hibernate.query.sqm.tree.SqmNode.log;
 
 @Slf4j
 @RestController
