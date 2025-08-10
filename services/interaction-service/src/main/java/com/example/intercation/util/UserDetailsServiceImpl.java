@@ -2,7 +2,6 @@ package com.example.intercation.util;
 
 import com.example.intercation.client.AuthClient;
 import com.example.intercation.dto.response.UserProfileResponse;
-import com.example.intercation.entity.UserDetailsImpl;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

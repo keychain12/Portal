@@ -82,15 +82,15 @@ public class ChannelService {
         // 채널 맞는지 확인..
         Channel channel = channelRepository.findByIdAndWorkspaceId(channelId, workspaceId)
                 .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다."));
-
-        // 권환 학인 /아직 권한이 없네...
+        //Todo 권한 / 페인으로 워크스페이스 서비스에서 조회해야할듯
+        //맴버찾고 권한확인
         ChannelMember member = channelMemberRepository.findByUserIdAndChannelId(userId, channelId)
                 .orElseThrow(() -> new IllegalArgumentException("채널의 맴버정보를 찾을수가 없습니다.."));
 
-        // 수정권한 없을시 에러
+       /* // 수정권한 없을시 에러
         if (!member.getRole().getPermissions().contains(Permission.EDIT_CHANNEL_PROFILE)) {
             throw new IllegalArgumentException("채널 수정 권한이 없습니다.");
-        }
+        }*/
 
         // 업뎃
         channel.update(request);

@@ -1,6 +1,5 @@
 package com.example.intercation.util;
 
-import com.example.intercation.entity.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;

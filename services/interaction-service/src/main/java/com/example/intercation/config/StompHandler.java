@@ -1,6 +1,6 @@
 package com.example.intercation.config;
 
-import com.example.intercation.entity.UserDetailsImpl;
+import com.example.intercation.util.UserDetailsImpl;
 import com.example.intercation.service.UserStatusService;
 import com.example.intercation.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
