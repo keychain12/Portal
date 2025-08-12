@@ -4,6 +4,8 @@ server:
   port: 8083
 
 spring:
+  application:
+    name: interaction-service  # Eureka에 등록될 서비스 이름
   # 데이터베이스, 메일 등 다른 설정은 그대로 유지됩니다.
   datasource:
     url: jdbc:mysql://my-db.chy0kuwimcw9.ap-northeast-2.rds.amazonaws.com/collabtool?useSSL=false&allowPublicKeyRetrieval=true
@@ -120,3 +122,14 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
+
+# Eureka Client 설정
+eureka:
+  client:
+    service-url:
+      default-zone: http://localhost:8761/eureka  # Eureka Server 주소
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}

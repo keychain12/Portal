@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-@FeignClient(name = "workspace-service",url = "http://localhost:8082")
+@FeignClient(name = "workspace-service")
 public interface WorkspaceClient {
 
 
