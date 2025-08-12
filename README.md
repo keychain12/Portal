@@ -188,6 +188,10 @@ GET /api/channels/{channelId}/messages         # 채팅 기록
 
 https://rose-quesadilla-dab.notion.site/DDD-215440d2302f8066bc05cb36fb286376?pvs=74
 
+- Netflix Eureka서버에 마이크로서비스를 등록해보자
+
+https://rose-quesadilla-dab.notion.site/Netflix-Eureka-24d440d2302f80d79167edbef6252a65
+
 - Redis 사용해 사용자 실시간 상태를 구현해보기
 
 https://rose-quesadilla-dab.notion.site/Redis-224440d2302f80799d38cdfd69f6b6cf
