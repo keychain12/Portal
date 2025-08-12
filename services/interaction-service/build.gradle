@@ -67,6 +67,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     // 오픈페인
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    // Eureka Client
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     //웹소켓
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     //시큐리티

@@ -3,7 +3,6 @@ package com.example.intercation.repository;
 import com.example.intercation.entity.ChannelMember;
 import com.example.intercation.entity.Channel;
 import com.example.intercation.entity.ChannelType;
-import com.example.intercation.entity.Role;
 import feign.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

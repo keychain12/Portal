@@ -17,7 +17,7 @@ public class WorkspaceMember {
     private Long userId;   // 유저 id
 
     @Enumerated(EnumType.STRING)
-    private WorkspaceRole workspaceRole; // 역할 / 오너 ,맴버, 게스트
+    private WorkspaceRole role; // 역할 / 오너 ,맴버, 게스트
 
     @Column(nullable = false)
     private String nickname;  // 유저닉네임
@@ -34,7 +34,7 @@ public class WorkspaceMember {
        return WorkspaceMember.builder()
                 .userId(userId)
                 .workspace(workspace)
-                .workspaceRole(WorkspaceRole.OWNER)
+                .role(WorkspaceRole.OWNER)
                 .nickname(nickname)
                 .profileImgUrl(profileImgUrl)
                 .build();
@@ -44,7 +44,7 @@ public class WorkspaceMember {
         return WorkspaceMember.builder()
                 .userId(userId)
                 .workspace(workspace)
-                .workspaceRole(WorkspaceRole.MEMBER)
+                .role(WorkspaceRole.MEMBER)
                 .nickname(nickname)
                 .profileImgUrl(profileImgUrl)
                 .build();

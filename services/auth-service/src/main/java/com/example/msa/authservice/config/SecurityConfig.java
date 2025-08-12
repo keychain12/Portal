@@ -44,6 +44,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()  // Eureka health check
+                        .requestMatchers("/eureka/**").permitAll()     // Eureka 관련
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -64,6 +64,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/workspace/**").authenticated()
                         .requestMatchers("/api/workspaces/**").authenticated()
                         .requestMatchers("/api/channels/**").authenticated() // 채널 관련 API도 인증 필요
+                        .requestMatchers("/actuator/**").permitAll()  // Eureka health check
+                        .requestMatchers("/eureka/**").permitAll()     // Eureka 관련
                         .anyRequest().authenticated()
                 );
 

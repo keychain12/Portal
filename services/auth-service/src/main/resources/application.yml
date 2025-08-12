@@ -1,26 +1,44 @@
 server:
   port: 8081
 
-  spring:
-    redis:
-      host: localhost
-      port: 6379
-
 spring:
-  datasource:
-    url: jdbc:mysql://my-db.chy0kuwimcw9.ap-northeast-2.rds.amazonaws.com/collabtool?useSSL=false&allowPublicKeyRetrieval=true
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: admin
-    password: 2468086d
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
+    application:
+      name: auth-service
+    datasource:
+      url: jdbc:mysql://my-db.chy0kuwimcw9.ap-northeast-2.rds.amazonaws.com/collabtool?useSSL=false&allowPublicKeyRetrieval=true
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: admin
+      password: 2468086d
+    data:
+      redis:
+        host: localhost
+        port: 6379
+    jpa:
       hibernate:
-        format_sql: true
+        ddl-auto: update
+      show-sql: true
+      properties:
+        hibernate:
+          format_sql: true
 
 jwt:
   secret:
     key: TVlfU0VDUkVUX0tFWV9NVVNUX0JFX0xPTkdfRU5PVUdIX0ZPUl9IUzI1Nl9BTEdPUklUSE0=
+
+  # Eureka Client 설정
+eureka:
+    client:
+      service-url:
+        default-zone: http://localhost:8761/eureka
+      register-with-eureka: true
+      fetch-registry: true
+    instance:
+      prefer-ip-address: true
+      instance-id: ${spring.application.name}:${server.port}
+
+management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info  # Eureka가 필요한 엔드포인트만
+

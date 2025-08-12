@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: workspace-service  # Eureka에 등록될 서비스 이름
   datasource:
     url: jdbc:mysql://my-db.chy0kuwimcw9.ap-northeast-2.rds.amazonaws.com/collabtool?useSSL=false&allowPublicKeyRetrieval=true
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -111,3 +113,14 @@ server:
 logging:
   level:
     org.hibernate.SQL: debug
+
+# Eureka Client 설정
+eureka:
+  client:
+    service-url:
+      default-zone: http://localhost:8761/eureka  # Eureka Server 주소
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
