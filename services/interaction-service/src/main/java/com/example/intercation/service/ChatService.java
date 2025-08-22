@@ -6,9 +6,12 @@ import com.example.intercation.dto.response.ChatMessageResponse;
 import com.example.intercation.dto.response.WorkspaceMemberResponse;
 import com.example.intercation.entity.Channel;
 import com.example.intercation.entity.ChatMessage;
+import com.example.intercation.entity.ChatMessageDocument;
 import com.example.intercation.repository.ChannelRepository;
 import com.example.intercation.repository.ChatMessageRepository;
+import com.example.intercation.repository.ChatMessageDocumentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +21,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ChatService {
     private final ChannelRepository channelRepository;
     private final WorkspaceClient workspaceClient;
     private final ChatMessageRepository chatMessageRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatMessageDocumentRepository documentRepository;
 
 
     @Transactional
@@ -50,12 +55,29 @@ public class ChatService {
 
         //저장
         ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
+        //Elasticsearch에 저장
+        ChatMessageDocument document = convertToDocument(savedMessage);
+        ChatMessageDocument save = documentRepository.save(document);
+        System.out.println("save = " + save);
         //응답 DTO
         ChatMessageResponse response = ChatMessageResponse.toResponse(savedMessage);
         //보내기
         messagingTemplate.convertAndSend("/sub/channel/" + channelId, response);
 
     }
+
+    private ChatMessageDocument convertToDocument(ChatMessage chatMessage) {
+        ChatMessageDocument document = new ChatMessageDocument();
+        document.setId(chatMessage.getId().toString());
+        document.setWorkspaceId(chatMessage.getWorkspaceId().toString());
+        document.setChannelId(chatMessage.getChannel().getId().toString());
+        document.setUserId(chatMessage.getSenderId().toString());
+        document.setContent(chatMessage.getContent());
+        document.setSenderNickname(chatMessage.getSenderNickname());
+//        document.setTimestamp(chatMessage.getCreatedAt().toString());
+        return document;
+    }
+
     // 워크스페이스id와 유저id로 워크스페이스멤버 정보 가져오기(닉네임,프로필사진,역할)
     private WorkspaceMemberResponse getByWorkspaceIdAndUserId(Long userId, Long workspaceId) {
         return workspaceClient.findByWorkspaceIdAndUserId(workspaceId, userId);

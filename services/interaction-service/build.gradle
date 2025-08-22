@@ -73,6 +73,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     //시큐리티
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    //엘라스틱 서치
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    implementation 'co.elastic.clients:elasticsearch-java:8.11.4'
+    implementation 'org.elasticsearch.client:elasticsearch-rest-client:8.11.4'
 
 
 }

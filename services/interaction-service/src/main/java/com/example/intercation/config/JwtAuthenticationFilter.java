@@ -30,6 +30,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        // permitAll 경로들은 JWT 검증을 건너뜀
+        String requestURI = request.getRequestURI();
+        
+        if (requestURI.contains("/api/chat/search/") ||
+            requestURI.startsWith("/api/login") ||
+            requestURI.startsWith("/api/signup") ||
+            requestURI.startsWith("/swagger-ui/") ||
+            requestURI.startsWith("/v3/api-docs/") ||
+            requestURI.startsWith("/actuator/") ||
+            requestURI.startsWith("/eureka/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // 1. 헤더에서 토큰 추출
         String token = jwtUtil.resolveToken(request);
 
