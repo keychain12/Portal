@@ -59,7 +59,8 @@ public class SecurityConfig {
                                 "/api/login",
                                 "/api/signup",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/api/chat/search/**"
                         ).permitAll()
                         .requestMatchers("/api/workspace/**").authenticated()
                         .requestMatchers("/api/workspaces/**").authenticated()

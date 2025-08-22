@@ -8,10 +8,12 @@ spring:
     name: interaction-service  # Eureka에 등록될 서비스 이름
   # 데이터베이스, 메일 등 다른 설정은 그대로 유지됩니다.
   datasource:
-    url: jdbc:mysql://my-db.chy0kuwimcw9.ap-northeast-2.rds.amazonaws.com/collabtool?useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/portal?useSSL=false&allowPublicKeyRetrieval=true
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: admin
-    password: 2468086d
+    username: root
+    password: password
+
+
 
   jpa:
     hibernate:
@@ -53,7 +55,7 @@ spring:
   # --- 기타 설정 ---
   app:
     base-url: http://localhost:3000
-    default-profile-image-url: "https://bucket1msa.s3.ap-northeast-2.amazonaws.com/default_img.png"
+    default-profile-image-url: "https://raw.githubusercontent.com/keychain12/Portal/main/default_img.png"
   presence:
     threshold:
       online: 30000
@@ -78,17 +80,7 @@ spring:
         default:
           connect-timeout: 5000
           read-timeout: 5000
-  cloud:
-    aws:
-      credentials:
-        access-key: AKIAWCYX76GS5OY7HZMB
-        secret-key: 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
-      s3:
-        bucket: bucket1msa
-      region:
-        static: ap-northeast-2
-      stack:
-        auto: false
+
   data:
     redis:
       host: localhost

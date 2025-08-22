@@ -16,7 +16,7 @@ const SignupPage = () => {
       const response = await fetch('http://localhost:8081/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname, email, password }),
+        body: JSON.stringify({ username: nickname, email, password }),
       });
 
       if (response.ok) {
@@ -92,7 +92,7 @@ const SignupPage = () => {
           </Button>
         </form>
         <p style={{ color: theme.colors.text.secondary }}>
-          이미 계정이 있으신가요? <Link to="/login" style={{ color: theme.colors.brand.primary, textDecoration: 'none' }}>로그인</Link>
+          이미 계정이 있으신가요? <Link to="/login" style={{ color: theme.colors.primary.brand, textDecoration: 'none' }}>로그인</Link>
         </p>
       </div>
     </div>

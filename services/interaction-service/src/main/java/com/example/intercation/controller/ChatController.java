@@ -1,7 +1,11 @@
 package com.example.intercation.controller;
 
 import com.example.intercation.dto.request.ChatMessageRequest;
+import com.example.intercation.dto.request.SearchRequest;
 import com.example.intercation.dto.response.ChatMessageResponse;
+import com.example.intercation.dto.response.SearchResponse;
+import com.example.intercation.entity.ChatMessageDocument;
+import com.example.intercation.service.ChatMessageSearchService;
 import com.example.intercation.util.UserDetailsImpl;
 import com.example.intercation.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -23,6 +28,7 @@ import java.util.List;
 public class ChatController {
 
     private final ChatService chatService;
+    private final ChatMessageSearchService chatMessageSearchService;
 
     @MessageMapping("/chat/{channelId}")
     @Operation(summary = "채팅보내기")
@@ -50,6 +56,15 @@ public class ChatController {
         return ResponseEntity.ok(history);
     }
 
+    @PostMapping("/api/chat/search/{workspaceId}")
+    @Operation(summary = "채팅내역 검색")
+    public List<SearchResponse> searchChat(@PathVariable Long workspaceId, @RequestBody SearchRequest request) {
 
+        List<ChatMessageDocument> result = chatMessageSearchService.searchByContent(request.getContent(), workspaceId);
+
+        return result.stream()
+                .map(SearchResponse::toResponse)
+                .collect(Collectors.toList());
+    }
 
 }
