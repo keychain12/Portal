@@ -72,5 +72,10 @@ public class WorkspaceService {
         return WorkspaceDetailResponse.from(workspace);
     }
 
-
+    @Transactional(readOnly = true)
+    public String findUrlSlugByWorkspaceId(Long workspaceId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 워크스페이스"));
+        return workspace.getUrlSlug();
+    }
 }

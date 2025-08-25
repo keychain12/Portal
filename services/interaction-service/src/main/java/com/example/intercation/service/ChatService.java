@@ -66,7 +66,8 @@ public class ChatService {
 
     }
 
-    private ChatMessageDocument convertToDocument(ChatMessage chatMessage) {
+    private ChatMessageDocument convertToDocument(ChatMessage chatMessage) { // 엘라스틱서치 도큐먼트엔티티에 넣기
+        //Todo 필요한거 채널이름, 워크스페이ㅡㅅ url
         ChatMessageDocument document = new ChatMessageDocument();
         document.setId(chatMessage.getId().toString());
         document.setWorkspaceId(chatMessage.getWorkspaceId().toString());
@@ -74,7 +75,13 @@ public class ChatService {
         document.setUserId(chatMessage.getSenderId().toString());
         document.setContent(chatMessage.getContent());
         document.setSenderNickname(chatMessage.getSenderNickname());
-//        document.setTimestamp(chatMessage.getCreatedAt().toString());
+        document.setTimestamp(chatMessage.getCreatedAt().toString());
+        //채널이름
+        String channelName = chatMessage.getChannel().getChannelName();
+        document.setChannelName(channelName);
+        //url 가져오기
+        String urlSlug = workspaceClient.getUrlSlug(chatMessage.getWorkspaceId());
+        document.setUrlSlug(urlSlug);
         return document;
     }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import theme from '../theme';
 import Input from '../components/Input';
 // FileUpload 컴포넌트 대신 인라인 구현으로 변경
@@ -10,6 +10,7 @@ import SockJS from 'sockjs-client';
 const WorkspaceDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [workspace, setWorkspace] = useState(null);
   const [channels, setChannels] = useState([]);
   const [selectedChannel, setSelectedChannel] = useState(null);
@@ -31,11 +32,10 @@ const WorkspaceDetailPage = () => {
   const [dragOver, setDragOver] = useState(false);
   const [isComposing, setIsComposing] = useState(false); // 한글 입력 상태 추적
   const [imageModal, setImageModal] = useState({ isOpen: false, src: '', alt: '', images: [], currentIndex: 0 });
-  // 검색 관련 상태
-  const [showSearch, setShowSearch] = useState(false);
+  // 상단 검색바용 상태
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
+  // 하이라이트할 메시지 ID
+  const [highlightedMessageId, setHighlightedMessageId] = useState(null);
   const messagesEndRef = useRef(null);
   const stompClientRef = useRef(null);
 
@@ -83,60 +83,51 @@ const WorkspaceDetailPage = () => {
     }
   }, []);
 
-  // 채팅 검색 함수
-  const searchChat = useCallback(async (query) => {
-    if (!query.trim() || !workspace?.id) return;
+  // URL 파라미터 처리 (검색에서 이동한 경우)
+  useEffect(() => {
+    const messageId = searchParams.get('message');
+    const channelId = searchParams.get('channel');
     
-    console.log('=== 검색 시작 ===');
-    console.log('검색어:', query);
-    console.log('워크스페이스 ID:', workspace.id);
-    
-    setIsSearching(true);
-    const authToken = localStorage.getItem('authToken');
-    
-    const url = `http://localhost:8083/api/chat/search/${workspace.id}`;
-    console.log('요청 URL:', url);
-    console.log('토큰 있는지:', !!authToken);
-    
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content: query }),
-      });
-
-      console.log('응답 상태:', response.status);
-      console.log('응답 OK:', response.ok);
+    if (messageId && channelId && workspace) {
+      console.log('URL 파라미터에서 받은 messageId:', messageId, 'channelId:', channelId);
       
-      if (response.ok) {
-        const results = await response.json();
-        console.log('검색 결과:', results);
-        setSearchResults(results);
-      } else {
-        console.error('검색 실패:', response.status, response.statusText);
-        const errorText = await response.text();
-        console.error('에러 내용:', errorText);
-        setSearchResults([]);
+      // 하이라이트할 메시지 설정
+      setHighlightedMessageId(messageId);
+      
+      // 해당 채널을 선택
+      const targetChannel = channels.find(ch => ch.id.toString() === channelId);
+      if (targetChannel && targetChannel.id !== selectedChannel?.id) {
+        setSelectedChannel(targetChannel);
       }
-    } catch (error) {
-      console.error('검색 중 네트워크 오류 발생:', error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-      console.log('=== 검색 종료 ===');
+      
+      // 3초 후 하이라이트 제거
+      const timer = setTimeout(() => {
+        setHighlightedMessageId(null);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
     }
-  }, [workspace?.id]);
+  }, [searchParams, workspace, channels, selectedChannel]);
 
-  // 검색 입력 핸들러
-  const handleSearchSubmit = useCallback((e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      searchChat(searchQuery);
+  // 하이라이트된 메시지로 스크롤
+  useEffect(() => {
+    if (highlightedMessageId && messages.length > 0) {
+      console.log('하이라이트된 메시지 ID:', highlightedMessageId);
+      console.log('현재 메시지들:', messages.map(m => m.id));
+      setTimeout(() => {
+        const messageElement = document.getElementById(`message-${highlightedMessageId}`);
+        if (messageElement) {
+          console.log('메시지 엘리먼트 찾음, 스크롤 시작');
+          messageElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        } else {
+          console.log('메시지 엘리먼트를 찾을 수 없음');
+        }
+      }, 500); // 메시지 로딩 후 스크롤
     }
-  }, [searchQuery, searchChat]);
+  }, [highlightedMessageId, messages]);
 
   useEffect(() => {
     const fetchWorkspaceAndChannels = async () => {
@@ -1017,11 +1008,77 @@ const WorkspaceDetailPage = () => {
       backgroundColor: theme.colors.background.primary,
       height: '100vh',
       display: 'flex',
+      flexDirection: 'column',
       fontFamily: theme.typography.fontFamily.sans,
       color: theme.colors.text.primary,
       overflow: 'hidden'
     }}>
-      {/* Left Navigation Bar */}
+      {/* 상단 검색바 */}
+      <div style={{
+        height: '60px',
+        backgroundColor: theme.colors.background.secondary,
+        borderBottom: `1px solid ${theme.colors.surface.border}`,
+        display: 'flex',
+        alignItems: 'center',
+        padding: `0 ${theme.spacing[6]}`,
+        flexShrink: 0
+      }}>
+        <div style={{
+          flex: 1,
+          maxWidth: '600px',
+          margin: '0 auto',
+          position: 'relative'
+        }}>
+          <div style={{
+            position: 'absolute',
+            left: theme.spacing[3],
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: theme.colors.text.muted,
+            fontSize: theme.typography.fontSize.sm,
+            pointerEvents: 'none',
+            zIndex: 1
+          }}>
+            🔍
+          </div>
+          <Input
+            type="text"
+            placeholder={`${workspace?.name || '워크스페이스'}에서 검색`}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && searchQuery.trim()) {
+                window.location.href = `/search?workspace=${workspace?.id}&q=${encodeURIComponent(searchQuery)}`;
+              }
+            }}
+            style={{
+              width: '100%',
+              paddingLeft: '40px',
+              backgroundColor: theme.colors.surface.default,
+              border: `1px solid ${theme.colors.surface.border}`,
+              borderRadius: '6px',
+              fontSize: theme.typography.fontSize.sm,
+              transition: 'all 0.2s ease'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = theme.colors.primary.brand;
+              e.target.style.backgroundColor = theme.colors.background.primary;
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = theme.colors.surface.border;
+              e.target.style.backgroundColor = theme.colors.surface.default;
+            }}
+          />
+        </div>
+      </div>
+      
+      {/* 메인 콘텐츠 영역 */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        overflow: 'hidden'
+      }}>
+        {/* Left Navigation Bar */}
       <div style={{
         width: '68px',
         backgroundColor: theme.colors.background.secondary,
@@ -1300,28 +1357,6 @@ const WorkspaceDetailPage = () => {
               </div>
             </div>
             
-            {/* 검색 버튼 */}
-            <div style={{
-              padding: theme.spacing[2],
-              borderRadius: theme.borderRadius.md,
-              cursor: 'pointer',
-              transition: `background-color ${theme.animation.duration.fast} ${theme.animation.easing.ease}`,
-              color: theme.colors.text.secondary,
-              fontSize: theme.typography.fontSize.lg,
-              marginRight: theme.spacing[1]
-            }}
-            onClick={() => setShowSearch(!showSearch)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = theme.colors.surface.hover;
-              e.currentTarget.style.color = theme.colors.primary.brand;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = theme.colors.text.secondary;
-            }}>
-              🔍
-            </div>
-            
             <div style={{
               padding: theme.spacing[2],
               borderRadius: theme.borderRadius.md,
@@ -1364,111 +1399,6 @@ const WorkspaceDetailPage = () => {
           </div>
         </div>
 
-        {/* 검색 UI */}
-        {showSearch && (
-          <div style={{
-            padding: theme.spacing[4],
-            borderBottom: `1px solid ${theme.colors.surface.border}`,
-            backgroundColor: theme.colors.background.secondary
-          }}>
-            <form onSubmit={handleSearchSubmit} style={{ marginBottom: theme.spacing[3] }}>
-              <Input
-                type="text"
-                placeholder="채팅 내용 검색..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                disabled={isSearching}
-                style={{
-                  width: '100%',
-                  marginBottom: theme.spacing[2]
-                }}
-              />
-              <button
-                type="submit"
-                disabled={!searchQuery.trim() || isSearching}
-                style={{
-                  width: '100%',
-                  padding: theme.spacing[2],
-                  backgroundColor: theme.colors.primary.brand,
-                  color: theme.colors.text.primary,
-                  border: 'none',
-                  borderRadius: theme.borderRadius.md,
-                  cursor: searchQuery.trim() && !isSearching ? 'pointer' : 'not-allowed',
-                  opacity: searchQuery.trim() && !isSearching ? 1 : 0.5,
-                  fontSize: theme.typography.fontSize.sm,
-                  fontWeight: theme.typography.fontWeight.medium
-                }}
-              >
-                {isSearching ? '검색 중...' : '검색'}
-              </button>
-            </form>
-            
-            {/* 검색 결과 */}
-            <div style={{
-              maxHeight: '300px',
-              overflowY: 'auto',
-              scrollbarWidth: 'thin'
-            }}>
-              {searchResults.length > 0 && (
-                <div style={{
-                  marginBottom: theme.spacing[2],
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  fontWeight: theme.typography.fontWeight.medium
-                }}>
-                  {searchResults.length}개의 결과를 찾았습니다
-                </div>
-              )}
-              
-              {searchResults.map((result, index) => (
-                <div
-                  key={index}
-                  style={{
-                    padding: theme.spacing[3],
-                    backgroundColor: theme.colors.surface.default,
-                    borderRadius: theme.borderRadius.md,
-                    marginBottom: theme.spacing[2],
-                    border: `1px solid ${theme.colors.surface.border}`,
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => {
-                    // 결과 클릭 시 해당 채널로 이동하는 로직 (추후 구현 가능)
-                    console.log('검색 결과 클릭:', result);
-                  }}
-                >
-                  <div style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    color: theme.colors.text.primary,
-                    marginBottom: theme.spacing[1],
-                    lineHeight: 1.4
-                  }}>
-                    {result.content || result.message || '내용'}
-                  </div>
-                  <div style={{
-                    fontSize: theme.typography.fontSize.xs,
-                    color: theme.colors.text.muted,
-                    display: 'flex',
-                    justifyContent: 'space-between'
-                  }}>
-                    <span>#{result.channelName || '채널'}</span>
-                    <span>{result.createdAt ? new Date(result.createdAt).toLocaleDateString() : ''}</span>
-                  </div>
-                </div>
-              ))}
-              
-              {searchQuery && searchResults.length === 0 && !isSearching && (
-                <div style={{
-                  textAlign: 'center',
-                  padding: theme.spacing[4],
-                  color: theme.colors.text.secondary,
-                  fontSize: theme.typography.fontSize.sm
-                }}>
-                  검색 결과가 없습니다
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Channels Navigation */}
         <div style={{
@@ -2207,7 +2137,49 @@ const WorkspaceDetailPage = () => {
                           gap: theme.spacing[1]
                         }}>
                           {group.messages.map((message) => (
-                            <div key={message.id}>
+                            <div 
+                              key={message.id}
+                              id={`message-${message.id}`}
+                              style={{
+                                backgroundColor: message.id.toString() === highlightedMessageId 
+                                  ? theme.colors.primary.brand + '20' 
+                                  : 'transparent',
+                                borderRadius: message.id.toString() === highlightedMessageId 
+                                  ? theme.borderRadius.md 
+                                  : '0',
+                                padding: message.id.toString() === highlightedMessageId 
+                                  ? theme.spacing[2] 
+                                  : '0',
+                                transition: 'all 0.3s ease',
+                                cursor: message.id.toString() === highlightedMessageId ? 'pointer' : 'default',
+                                display: message.id.toString() === highlightedMessageId ? 'flex' : 'block',
+                                alignItems: message.id.toString() === highlightedMessageId ? 'flex-start' : 'normal',
+                                gap: message.id.toString() === highlightedMessageId ? theme.spacing[3] : '0'
+                              }}
+                              onClick={() => {
+                                if (message.id.toString() === highlightedMessageId) {
+                                  setHighlightedMessageId(null);
+                                }
+                              }}
+                            >
+                              {/* 하이라이트된 경우에만 시간 표시 */}
+                              {message.id.toString() === highlightedMessageId && (
+                                <div style={{
+                                  fontSize: theme.typography.fontSize.xs,
+                                  color: theme.colors.text.secondary,
+                                  minWidth: '50px',
+                                  paddingTop: theme.spacing[1],
+                                  lineHeight: theme.typography.lineHeight.tight
+                                }}>
+                                  {new Date(message.createdAt || message.timestamp).toLocaleTimeString('ko-KR', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </div>
+                              )}
+                              <div style={{ 
+                                flex: message.id.toString() === highlightedMessageId ? 1 : 'initial' 
+                              }}>
                               {message.messageType === 'IMAGE' ? (
                                 <div style={{
                                   marginTop: theme.spacing[2]
@@ -2296,6 +2268,7 @@ const WorkspaceDetailPage = () => {
                                   {message.content}
                                 </div>
                               )}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -2719,6 +2692,8 @@ const WorkspaceDetailPage = () => {
         )}
       </div>
 
+      </div> {/* 메인 콘텐츠 영역 닫기 */}
+      
       {/* 이미지 모달 */}
       <ImageModal
         isOpen={imageModal.isOpen}

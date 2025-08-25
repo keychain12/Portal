@@ -23,4 +23,7 @@ public interface WorkspaceClient {
     WorkspaceMemberResponse findByWorkspaceIdAndUserId(@PathVariable Long workspaceId,
                                                                 @PathVariable Long userId);
 
+    @GetMapping("/api/workspaces/{workspaceId}/slug")
+    String getUrlSlug(@PathVariable Long workspaceId);
+
 }

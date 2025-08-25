@@ -76,5 +76,10 @@ public class WorkspaceController {
         return ResponseEntity.ok(workspace);
     }
 
+    @GetMapping("/workspaces/{workspaceId}/slug")
+    public ResponseEntity<?> getUrlSlug(@PathVariable Long workspaceId) {
+        String urlSlug = workspaceService.findUrlSlugByWorkspaceId(workspaceId);
+        return ResponseEntity.ok(urlSlug);
+    }
 
 }

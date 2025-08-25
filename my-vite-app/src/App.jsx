@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import WorkspacePage from './pages/WorkspacePage';
 import WorkspaceDetailPage from './pages/WorkspaceDetailPage';
+import SearchPage from './pages/SearchPage';
 import InvitationPage from './pages/InvitationPage';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/workspace" element={<WorkspacePage />} />
         <Route path="/workspace/:slug" element={<WorkspaceDetailPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route path="/invitation" element={<InvitationPage />} />
         <Route path="/accept" element={<InvitationPage />} />
       </Routes>
