@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    # image: elasticsearch:8.11.0
+    build: .
+    container_name: elasticsearch
+    environment:
+      # 클러스터 이름 설정
+      - cluster.name=docker-cluster
+      - node.name=elasticsearch
+      
+      # 단일 노드 모드 (개발용)
+      - discovery.type=single-node
+      
+      # 보안 비활성화 (개발환경용)
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      
+      # 메모리 설정 (더 낮은 값으로 설정)
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      
+      # 네트워크 설정
+      - network.host=0.0.0.0
+      - http.port=9200
+      - transport.port=9300
+      
+      # 인덱스 생성 설정
+      - action.auto_create_index=true
+      
+    ports:
+      - "9200:9200"  # REST API 포트
+      - "9300:9300"  # 노드 간 통신 포트
+      
+    volumes:
+      # 데이터 영속성을 위한 볼륨 마운트
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      
+    networks:
+      - elasticsearch_network
+      
+    # 메모리 제한 (시스템 자원 보호)
+    mem_limit: 512m
+    mem_reservation: 256m
+    
+    # 컨테이너 재시작 정책
+    restart: unless-stopped
+    
+    # 헬스 체크
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  kibana:
+    image: kibana:8.11.0
+    container_name: kibana
+    environment:
+      # Elasticsearch 연결 설정
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=5601
+      
+      # 보안 비활성화 (Elasticsearch와 동일)
+      - XPACK_SECURITY_ENABLED=false
+      
+    ports:
+      - "5601:5601"  # Kibana 웹 UI 포트
+      
+    networks:
+      - elasticsearch_network
+      
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+        
+    # 컨테이너 재시작 정책
+    restart: unless-stopped
+    
+    # 헬스 체크
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+# 볼륨 정의 (데이터 영속성)
+volumes:
+  elasticsearch_data:
+    driver: local
+
+# 네트워크 정의
+networks:
+  elasticsearch_network:
+    driver: bridge

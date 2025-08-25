@@ -1,11 +1,10 @@
 package com.example.intercation.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Id;
 import lombok.*;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)  // ChatMessageDocument.class 이걸 저장하기떄문에 조회시 에러뜬다 이어노테이션으로 무시하라고해주지..
+@Setting(settingPath = "elasticsearch/nori-analyzer-settings.json")
 public class ChatMessageDocument {
 
     @Id
@@ -28,12 +28,25 @@ public class ChatMessageDocument {
     @Field(type = FieldType.Keyword)
     private String userId;
 
+    @Field(type = FieldType.Keyword)
+    private String urlSlug;
+
+    @Field(type = FieldType.Keyword)
+    private String channelName;
+
     @Field(type = FieldType.Text)
     private String senderNickname;
 
-    @Field(type = FieldType.Text)
+    //    @Field(type = FieldType.Text, analyzer = "my_korean_analyzer")
+    @MultiField(
+            mainField = @Field(type = FieldType.Text, analyzer = "my_korean_analyzer"),
+            otherFields = {
+                    @InnerField(suffix = "autocomplete", type = FieldType.Text, analyzer = "autocomplete_analyzer") // ◀◀◀ @Field를 @InnerField로, name을 suffix로 변경
+            }
+    )
     private String content;
-/*
+
+
     @Field(type = FieldType.Date)
     private String timestamp; // LocalDateTime 이 역직렬화 안되서 String으로 임시방편..*/
 }

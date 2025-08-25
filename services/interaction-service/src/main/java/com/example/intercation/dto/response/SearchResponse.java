@@ -2,6 +2,7 @@ package com.example.intercation.dto.response;
 
 import com.example.intercation.entity.ChatMessageDocument;
 import lombok.Data;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,7 +15,9 @@ public class SearchResponse {
     private String userId;
     private String senderNickname;
     private String content;
-//    private String timestamp;
+    private String timestamp;
+    private String channelName;
+    private String urlSlug;
 
     public static SearchResponse toResponse(ChatMessageDocument document) {
         SearchResponse response = new SearchResponse();
@@ -24,7 +27,9 @@ public class SearchResponse {
         response.setUserId(document.getUserId());
         response.setSenderNickname(document.getSenderNickname());
         response.setContent(document.getContent());
-//        response.setTimestamp(document.getTimestamp());
+        response.setTimestamp(document.getTimestamp());
+        response.setChannelName(document.getChannelName());
+        response.setUrlSlug(document.getUrlSlug());
         return response;
     }
 }
