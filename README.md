@@ -218,4 +218,10 @@ https://rose-quesadilla-dab.notion.site/FeignClient-216440d2302f80d28325e79e12c0
 
 https://rose-quesadilla-dab.notion.site/MSA-Saga-245440d2302f80b3a500f636b70e0537?pvs=73
 
+- SQL 쿼리로말고 엘라스틱서치로 검색시스템을 붙혀보자.
+
+https://rose-quesadilla-dab.notion.site/25b440d2302f80daac8bce5d48ff201e
+
+![es](https://github.com/user-attachments/assets/8b96ddeb-1811-467e-a540-d313ade23555)
+
 
