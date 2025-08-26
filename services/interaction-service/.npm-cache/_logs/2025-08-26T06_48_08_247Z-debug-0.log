@@ -6,8 +6,8 @@
 5 silly config load:file:/usr/local/etc/npmrc
 6 verbose title npm config get prefix
 7 verbose argv "--global" "config" "get" "prefix"
-8 verbose logfile logs-max:10 dir:/Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-25T09_32_31_033Z-
-9 verbose logfile /Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-25T09_32_31_033Z-debug-0.log
+8 verbose logfile logs-max:10 dir:/Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-26T06_48_08_247Z-
+9 verbose logfile /Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-26T06_48_08_247Z-debug-0.log
 10 verbose cwd /Users/green/Portal/services/interaction-service
 11 verbose os Darwin 23.5.0
 12 verbose node v22.14.0

@@ -67,7 +67,6 @@ public class ChatService {
     }
 
     private ChatMessageDocument convertToDocument(ChatMessage chatMessage) { // 엘라스틱서치 도큐먼트엔티티에 넣기
-        //Todo 필요한거 채널이름, 워크스페이ㅡㅅ url
         ChatMessageDocument document = new ChatMessageDocument();
         document.setId(chatMessage.getId().toString());
         document.setWorkspaceId(chatMessage.getWorkspaceId().toString());

@@ -6,11 +6,11 @@
 5 silly config load:file:/usr/local/etc/npmrc
 6 verbose title npm view @anthropic-ai/claude-code@latest version
 7 verbose argv "view" "@anthropic-ai/claude-code@latest" "version"
-8 verbose logfile logs-max:10 dir:/Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-25T08_02_27_113Z-
-9 verbose logfile /Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-25T08_02_27_113Z-debug-0.log
-10 silly logfile start cleaning logs, removing 1 files
+8 verbose logfile logs-max:10 dir:/Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-26T09_29_13_830Z-
+9 verbose logfile /Users/green/Portal/services/interaction-service/.npm-cache/_logs/2025-08-26T09_29_13_830Z-debug-0.log
+10 silly logfile start cleaning logs, removing 2 files
 11 silly logfile done cleaning log files
-12 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code 160ms (cache revalidated)
+12 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code 3332ms (cache revalidated)
 13 verbose cwd /Users/green/Portal/services/interaction-service
 14 verbose os Darwin 23.5.0
 15 verbose node v22.14.0
