@@ -8,6 +8,7 @@ import WorkspacePage from './pages/WorkspacePage';
 import WorkspaceDetailPage from './pages/WorkspaceDetailPage';
 import SearchPage from './pages/SearchPage';
 import InvitationPage from './pages/InvitationPage';
+import RAGPage from './pages/RAGPage';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/invitation" element={<InvitationPage />} />
         <Route path="/accept" element={<InvitationPage />} />
+        <Route path="/rag" element={<RAGPage />} />
       </Routes>
     </Router>
   );

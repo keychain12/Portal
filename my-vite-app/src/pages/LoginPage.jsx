@@ -42,37 +42,59 @@ const LoginPage = () => {
     
     try {
       console.log('API 호출 시작...');
+      const requestBody = JSON.stringify({ email, password });
+      console.log('요청 본문:', requestBody);
+      
       const response = await fetch('http://localhost:8081/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: requestBody,
       });
 
       console.log('응답 상태:', response.status);
       console.log('응답 OK:', response.ok);
+      console.log('응답 헤더 Content-Type:', response.headers.get('content-type'));
+
+      // 먼저 응답을 텍스트로 읽음
+      const responseText = await response.text();
+      console.log('응답 원문:', responseText);
 
       if (response.ok) {
-        const data = await response.json();
-        console.log('로그인 응답 데이터:', data);
-        
-        localStorage.setItem('authToken', data.token);
-        console.log('토큰 저장 완료');
-        
-        alert('로그인 성공!');
-        
-        // 저장된 리다이렉트 URL이 있으면 그곳으로, 없으면 워크스페이스로 이동
-        if (redirectUrl) {
-          console.log('리다이렉트 URL로 이동:', redirectUrl);
-          localStorage.removeItem('redirectAfterLogin'); // 사용 후 제거
-          navigate(redirectUrl);
-        } else {
-          console.log('워크스페이스로 이동');
-          navigate('/workspace');
+        try {
+          const data = JSON.parse(responseText);
+          console.log('로그인 응답 데이터:', data);
+          
+          localStorage.setItem('authToken', data.token);
+          console.log('토큰 저장 완료');
+          
+          alert('로그인 성공!');
+          
+          // 저장된 리다이렉트 URL이 있으면 그곳으로, 없으면 워크스페이스로 이동
+          if (redirectUrl) {
+            console.log('리다이렉트 URL로 이동:', redirectUrl);
+            localStorage.removeItem('redirectAfterLogin'); // 사용 후 제거
+            navigate(redirectUrl);
+          } else {
+            console.log('워크스페이스로 이동');
+            navigate('/workspace');
+          }
+        } catch (parseError) {
+          console.error('JSON 파싱 오류:', parseError);
+          console.log('파싱할 수 없는 응답:', responseText);
+          alert('서버 응답을 처리하는 중 오류가 발생했습니다.');
         }
       } else {
-        const errorData = await response.json();
-        console.error('로그인 실패 응답:', errorData);
-        alert(`로그인 실패: ${errorData.message || response.statusText}`);
+        try {
+          const errorData = JSON.parse(responseText);
+          console.error('로그인 실패 응답:', errorData);
+          alert(`로그인 실패: ${errorData.message || response.statusText}`);
+        } catch (parseError) {
+          console.error('에러 응답 JSON 파싱 실패:', parseError);
+          alert(`로그인 실패: ${responseText || response.statusText}`);
+        }
       }
     } catch (error) {
       console.error('로그인 중 네트워크 오류:', error);

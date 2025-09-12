@@ -37,13 +37,13 @@ public class ChatMessageDocument {
     @Field(type = FieldType.Text)
     private String senderNickname;
 
-    //    @Field(type = FieldType.Text, analyzer = "my_korean_analyzer")
-    @MultiField(
-            mainField = @Field(type = FieldType.Text, analyzer = "my_korean_analyzer"),
-            otherFields = {
-                    @InnerField(suffix = "autocomplete", type = FieldType.Text, analyzer = "autocomplete_analyzer") // ◀◀◀ @Field를 @InnerField로, name을 suffix로 변경
-            }
-    )
+    /*    @MultiField(
+                mainField = @Field(type = FieldType.Text, analyzer = "my_korean_analyzer"),
+                otherFields = {
+                        @InnerField(suffix = "autocomplete", type = FieldType.Text, analyzer = "autocomplete_analyzer") // ◀◀◀ @Field를 @InnerField로, name을 suffix로 변경
+                }
+        )*/
+    @Field(type = FieldType.Text, analyzer = "my_korean_analyzer")
     private String content;
 
 

@@ -29,6 +29,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageDocumentRepository documentRepository;
+    private final ChatRAGService chatRAGService;
 
 
     @Transactional
@@ -59,6 +60,8 @@ public class ChatService {
         ChatMessageDocument document = convertToDocument(savedMessage);
         ChatMessageDocument save = documentRepository.save(document);
         System.out.println("save = " + save);
+        // RAG 임베딩 생성
+        chatRAGService.createAndSaveEmbedding(document);
         //응답 DTO
         ChatMessageResponse response = ChatMessageResponse.toResponse(savedMessage);
         //보내기

@@ -78,6 +78,9 @@ dependencies {
     implementation 'co.elastic.clients:elasticsearch-java:8.11.4'
     implementation 'org.elasticsearch.client:elasticsearch-rest-client:8.11.4'
 
+    //오픈 ai
+    implementation 'com.theokanning.openai-gpt3-java:service:0.18.2'
+
 
 }
 

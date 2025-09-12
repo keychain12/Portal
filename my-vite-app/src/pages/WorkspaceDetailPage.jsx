@@ -4,6 +4,7 @@ import theme from '../theme';
 import Input from '../components/Input';
 // FileUpload 컴포넌트 대신 인라인 구현으로 변경
 import ImageModal from '../components/ImageModal';
+import RAGModal from '../components/RAGModal';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -36,6 +37,8 @@ const WorkspaceDetailPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   // 하이라이트할 메시지 ID
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+  // RAG 모달 상태
+  const [showRAGModal, setShowRAGModal] = useState(false);
   const messagesEndRef = useRef(null);
   const stompClientRef = useRef(null);
 
@@ -2639,6 +2642,34 @@ const WorkspaceDetailPage = () => {
               >
                 📎
               </button>
+
+              <button 
+                onClick={() => setShowRAGModal(true)}
+                style={{
+                  padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
+                  borderRadius: theme.borderRadius.md,
+                  backgroundColor: theme.colors.background.primary,
+                  border: 'none',
+                  color: theme.colors.text.secondary,
+                  cursor: 'pointer',
+                  fontSize: theme.typography.fontSize.base,
+                  transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.ease}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: theme.spacing[1]
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.colors.surface.hover;
+                  e.currentTarget.style.color = theme.colors.text.primary;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.colors.background.primary;
+                  e.currentTarget.style.color = theme.colors.text.secondary;
+                }}
+                title="AI에게 질문하기"
+              >
+                🤖
+              </button>
               
               {/* 전송 버튼 - 고정 크기로 만들기 */}
               <div style={{
@@ -2704,6 +2735,14 @@ const WorkspaceDetailPage = () => {
         currentIndex={imageModal.currentIndex}
         onPrevious={handleModalPrevious}
         onNext={handleModalNext}
+      />
+
+      {/* RAG 모달 */}
+      <RAGModal
+        isOpen={showRAGModal}
+        onClose={() => setShowRAGModal(false)}
+        workspaceId={workspace?.id?.toString()}
+        channelId={selectedChannel?.id?.toString()}
       />
     </div>
   );

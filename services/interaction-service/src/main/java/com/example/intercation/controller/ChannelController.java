@@ -1,11 +1,13 @@
 package com.example.intercation.controller;
 
 
+import com.example.intercation.dto.request.AskRequest;
 import com.example.intercation.dto.request.CreateChannelRequest;
 import com.example.intercation.dto.request.UpdateChannelRequest;
 import com.example.intercation.dto.response.ChannelDetailResponse;
 import com.example.intercation.dto.response.ChannelSimpleResponse;
 import com.example.intercation.service.ChannelService;
+import com.example.intercation.service.ChatRAGService;
 import com.example.intercation.util.LoginUserId;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +28,7 @@ import java.util.Map;
 public class ChannelController {
 
     private final ChannelService channelService;
+    private final ChatRAGService chatRAGService;
 
     @PostMapping("/workspace/{workspaceId}/channels")
     @Operation(summary = "채널생성", description = "채널생성 api")
@@ -69,6 +72,14 @@ public class ChannelController {
                               @LoginUserId Long userId) {
 
         channelService.updateChannel(workspaceId, channelId, userId, request);
+    }
 
+    @PostMapping("/ask") // rag 질문하기
+    public String askQuestion(@RequestBody AskRequest reuqest) {
+        return chatRAGService.searchAndAnswer(
+                reuqest.getQuestion(),
+                reuqest.getWorkspaceId(),
+                reuqest.getChannelId()
+        );
     }
 }

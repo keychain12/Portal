@@ -45,10 +45,10 @@ public class SecurityConfig {
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 이 필터 체인은 WebSocket 경로를 제외한 API 경로에만 적용됨
-                .securityMatcher(request -> 
-                    !request.getServletPath().startsWith("/ws-stomp") && 
-                    !request.getServletPath().startsWith("/pub") && 
-                    !request.getServletPath().startsWith("/sub")
+                .securityMatcher(request ->
+                        !request.getServletPath().startsWith("/ws-stomp") &&
+                                !request.getServletPath().startsWith("/pub") &&
+                                !request.getServletPath().startsWith("/sub")
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -67,6 +67,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/channels/**").authenticated() // 채널 관련 API도 인증 필요
                         .requestMatchers("/actuator/**").permitAll()  // Eureka health check
                         .requestMatchers("/eureka/**").permitAll()     // Eureka 관련
+                        .requestMatchers("/api/ask").permitAll()
                         .anyRequest().authenticated()
                 );
 
