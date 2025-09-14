@@ -224,4 +224,8 @@ https://rose-quesadilla-dab.notion.site/25b440d2302f80daac8bce5d48ff201e
 
 ![es](https://github.com/user-attachments/assets/8b96ddeb-1811-467e-a540-d313ade23555)
 
+- 엘리스틱서치 쓴김에 open ai를 활용해 RAG(검색 증강 생성) 시스템 만들기
+  
+![rag](https://github.com/user-attachments/assets/54b50e75-a94d-4ab4-901e-c57d15e509ba)
+
 
