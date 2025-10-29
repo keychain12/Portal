@@ -49,7 +49,7 @@ public class ChatRAGService {
                     .workspaceId(chatMessage.getWorkspaceId())
                     .channelId(chatMessage.getChannelId())
                     .content(chatMessage.getContent())
-                    .contentVector(openAIService.createEmbedding(chatMessage.getContent()))
+                    .contentVector(vector)
                     .timestamp(chatMessage.getTimestamp())
                     .senderNickname(chatMessage.getSenderNickname())
                     .build();

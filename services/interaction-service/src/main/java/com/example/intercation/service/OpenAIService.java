@@ -50,7 +50,7 @@ public class OpenAIService {
     // 답변 생성
     public String generateAnswer(String prompt) {
         ChatCompletionRequest request = ChatCompletionRequest.builder()
-                .model("gpt-3.5-turbo")
+                .model("gpt-4o-mini-2024-07-18")
                 .messages(List.of(
                         new ChatMessage("system", "과거 대화를 참고해서 답변하는 어시스턴트입니다."),
                         new ChatMessage("user", prompt)

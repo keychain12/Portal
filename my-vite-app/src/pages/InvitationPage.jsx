@@ -119,8 +119,20 @@ const InvitationPage = () => {
         console.log('초대 수락 성공:', result);
         
         // redirectUrl에서 workspaceSlug 추출
-        const workspaceSlug = result.redirectUrl?.workspaceSlug || result.redirectUrl;
-        console.log('워크스페이스 슬러그:', workspaceSlug);
+        console.log('전체 응답 result:', result);
+        console.log('result.redirectUrl:', result.redirectUrl);
+        console.log('result.redirectUrl 타입:', typeof result.redirectUrl);
+        
+        let workspaceSlug;
+        if (typeof result.redirectUrl === 'string') {
+          workspaceSlug = result.redirectUrl;
+        } else if (result.redirectUrl?.workspaceSlug) {
+          workspaceSlug = result.redirectUrl.workspaceSlug;
+        } else if (result.redirectUrl?.urlSlug) {
+          workspaceSlug = result.redirectUrl.urlSlug;
+        }
+        
+        console.log('최종 워크스페이스 슬러그:', workspaceSlug);
         
         // 슬러그를 상태로 저장 (프로필 설정에 필요)
         setInvitationData(prev => ({

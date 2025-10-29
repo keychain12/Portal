@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()  // Eureka health check
                         .requestMatchers("/eureka/**").permitAll()     // Eureka 관련
                         .requestMatchers("/api/ask").permitAll()
+                        .requestMatchers("/api/notifications/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

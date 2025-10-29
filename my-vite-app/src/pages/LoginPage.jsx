@@ -66,8 +66,21 @@ const LoginPage = () => {
         try {
           const data = JSON.parse(responseText);
           console.log('로그인 응답 데이터:', data);
+          console.log('응답 데이터 구조:', Object.keys(data));
           
           localStorage.setItem('authToken', data.token);
+          
+          // userId가 있다면 저장
+          if (data.userId) {
+            localStorage.setItem('userId', data.userId.toString());
+            console.log('userId 저장 완료:', data.userId);
+          } else if (data.user?.id) {
+            localStorage.setItem('userId', data.user.id.toString());
+            console.log('user.id 저장 완료:', data.user.id);
+          } else {
+            console.warn('로그인 응답에 userId가 없습니다. 응답 데이터:', data);
+          }
+          
           console.log('토큰 저장 완료');
           
           alert('로그인 성공!');

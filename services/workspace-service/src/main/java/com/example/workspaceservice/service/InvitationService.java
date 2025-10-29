@@ -100,7 +100,7 @@ public class InvitationService {
 
         // 데이터베이스 작업
         // 워크스페이스멤버 정적팩토리메서드 - 닉네임과 프로필 이미지 URL 사용
-        WorkspaceMember newMember = WorkspaceMember.createMember(userId, workspace, nickname, profileImageUrl);
+        WorkspaceMember newMember = WorkspaceMember.createMember(userId, workspace, user.getUsername(), profileImageUrl);
         //저장
         memberRepository.save(newMember);
         // 초대 상태 변경

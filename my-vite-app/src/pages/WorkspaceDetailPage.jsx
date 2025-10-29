@@ -4,7 +4,9 @@ import theme from '../theme';
 import Input from '../components/Input';
 // FileUpload 컴포넌트 대신 인라인 구현으로 변경
 import ImageModal from '../components/ImageModal';
-import RAGModal from '../components/RAGModal';
+import AIPanel from '../components/AIPanel';
+import NotificationService from '../services/notificationService';
+import NotificationManager from '../components/NotificationToast';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -37,8 +39,8 @@ const WorkspaceDetailPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   // 하이라이트할 메시지 ID
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
-  // RAG 모달 상태
-  const [showRAGModal, setShowRAGModal] = useState(false);
+  // AI 패널 상태
+  const [showAIPanel, setShowAIPanel] = useState(false);
   const messagesEndRef = useRef(null);
   const stompClientRef = useRef(null);
 
@@ -46,15 +48,7 @@ const WorkspaceDetailPage = () => {
   const channelCount = useMemo(() => channels.length, [channels.length]);
   const hasMessages = useMemo(() => messages.length > 0, [messages.length]);
   const canSendMessage = useMemo(() => {
-    const result = (messageInput.trim() || selectedFiles.length > 0) && selectedChannel && !isSending;
-    console.log('canSendMessage 계산:', {
-      messageInput: messageInput.trim(),
-      selectedFilesCount: selectedFiles.length,
-      hasSelectedChannel: !!selectedChannel,
-      isSending,
-      result
-    });
-    return result;
+    return (messageInput.trim() || selectedFiles.length > 0) && selectedChannel && !isSending;
   }, [messageInput, selectedFiles.length, selectedChannel, isSending]);
 
   // 워크스페이스 멤버 상태 가져오기 함수
@@ -163,6 +157,13 @@ const WorkspaceDetailPage = () => {
               try {
                 const payload = JSON.parse(atob(authToken.split('.')[1]));
                 const currentUserId = payload.userId;
+                
+                // userId를 localStorage에 저장
+                if (currentUserId) {
+                  localStorage.setItem('userId', currentUserId.toString());
+                  console.log('JWT에서 userId 추출 및 저장:', currentUserId);
+                }
+                
                 const currentUserInfo = workspaceData.members.find(member => member.userId === currentUserId);
                 if (currentUserInfo) {
                   setCurrentUser(currentUserInfo);
@@ -391,6 +392,45 @@ const WorkspaceDetailPage = () => {
     return subscription;
   }, []);
 
+  // 알림 구독 함수
+  const subscribeToNotifications = useCallback(() => {
+    if (!stompClientRef.current?.connected) {
+      console.log('WebSocket 연결되지 않아서 알림 구독 불가');
+      return;
+    }
+
+    console.log('알림 구독 시작: /user/queue/notifications');
+    const subscription = stompClientRef.current.subscribe(
+      `/user/queue/notifications`,
+      (message) => {
+        try {
+          const notification = JSON.parse(message.body);
+          console.log('🔔 실시간 알림 수신:', notification);
+          
+          // 알림 토스트 표시
+          if (window.showNotification) {
+            console.log('토스트 알림 표시 시도');
+            window.showNotification({
+              mentionType: notification.type || 'USER', // type 필드 사용
+              channelName: notification.channelName,
+              message: notification.message,
+              senderName: notification.senderName,
+              channelId: notification.channelId
+            });
+          } else {
+            console.error('window.showNotification 함수가 없음');
+          }
+        } catch (error) {
+          console.error('알림 메시지 파싱 오류:', error);
+        }
+      }
+    );
+    
+    console.log('알림 구독 완료:', subscription);
+
+    return subscription;
+  }, []);
+
   // WebSocket 연결 설정
   const connectWebSocket = useCallback(() => {
     const authToken = localStorage.getItem('authToken');
@@ -423,6 +463,16 @@ const WorkspaceDetailPage = () => {
 
         // 워크스페이스 상태 업데이트 구독
         subscribeToStatusUpdates(workspace.id);
+        
+        // 알림 구독
+        subscribeToNotifications();
+        
+        // WebSocket 연결 정보 로깅
+        console.log('WebSocket 연결 정보:', {
+          connected: stompClientRef.current?.connected,
+          userId: localStorage.getItem('userId'),
+          hasAuthToken: !!localStorage.getItem('authToken')
+        });
       },
       onStompError: (frame) => {
         console.error('STOMP Error:', frame.headers['message']);
@@ -627,9 +677,22 @@ const WorkspaceDetailPage = () => {
 
   // 메시지 전송 함수를 메모이제이션
   const handleSendMessage = useCallback(async () => {
+    console.log('handleSendMessage 호출됨', { 
+      messageInput: messageInput.trim(), 
+      selectedFilesCount: selectedFiles.length,
+      isSending,
+      selectedChannelId: selectedChannel?.id 
+    });
+    
     // 파일만 있는 경우도 전송 가능하도록 수정
-    if (!messageInput.trim() && selectedFiles.length === 0) return;
-    if (!selectedChannel || isSending) return;
+    if (!messageInput.trim() && selectedFiles.length === 0) {
+      console.log('전송 중단: 메시지와 파일이 모두 비어있음');
+      return;
+    }
+    if (!selectedChannel || isSending) {
+      console.log('전송 조건 미충족:', { selectedChannel: !!selectedChannel, isSending });
+      return;
+    }
     
     // WebSocket 연결 상태 확인
     if (!stompClientRef.current?.connected) {
@@ -688,6 +751,19 @@ const WorkspaceDetailPage = () => {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
           }
         });
+
+        // 멘션 감지 및 알림 처리
+        try {
+          await NotificationService.handleMessageMentions({
+            message: messageContent,
+            workspaceId: workspace.id,
+            channelId: selectedChannel.id,
+            senderId: currentUser?.userId,
+            workspaceMembers: workspaceMembers
+          });
+        } catch (error) {
+          console.error('멘션 알림 처리 실패:', error);
+        }
       }
 
     } catch (error) {
@@ -698,7 +774,7 @@ const WorkspaceDetailPage = () => {
     } finally {
       setIsSending(false);
     }
-  }, [canSendMessage, messageInput, selectedChannel?.id]);
+  }, [messageInput, selectedFiles, selectedChannel, isSending, workspace?.id, workspaceMembers, currentUser?.userId]);
 
   // 로그아웃 핸들러
   const handleLogout = useCallback(() => {
@@ -1645,6 +1721,7 @@ const WorkspaceDetailPage = () => {
               marginBottom: theme.spacing[3],
               padding: `0 ${theme.spacing[1]}`
             }}>
+
               <button style={{
                 background: 'none',
                 border: 'none',
@@ -1951,6 +2028,40 @@ const WorkspaceDetailPage = () => {
                 >
                   👥 멤버
                 </button>
+                
+                <button 
+                  onClick={() => setShowAIPanel(!showAIPanel)}
+                  style={{
+                    background: 'none',
+                    border: `1px solid ${showAIPanel ? theme.colors.primary.brand : theme.colors.surface.border}`,
+                    borderRadius: theme.borderRadius.md,
+                    padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    color: showAIPanel ? theme.colors.primary.brand : theme.colors.text.primary,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: theme.spacing[1],
+                    transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.ease}`,
+                    backgroundColor: showAIPanel ? theme.colors.primary.brand + '10' : theme.colors.surface.default
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!showAIPanel) {
+                      e.currentTarget.style.backgroundColor = theme.colors.surface.hover;
+                      e.currentTarget.style.borderColor = theme.colors.surface.borderHover;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!showAIPanel) {
+                      e.currentTarget.style.backgroundColor = theme.colors.surface.default;
+                      e.currentTarget.style.borderColor = theme.colors.surface.border;
+                    }
+                  }}
+                  title="AI에게 대화 내용을 물어보세요"
+                >
+                  AI
+                </button>
                 <button style={{
                   background: 'none',
                   border: 'none',
@@ -2139,9 +2250,9 @@ const WorkspaceDetailPage = () => {
                           flexDirection: 'column',
                           gap: theme.spacing[1]
                         }}>
-                          {group.messages.map((message) => (
+                          {group.messages.map((message, messageIndex) => (
                             <div 
-                              key={message.id}
+                              key={`msg-${message.id}-${messageIndex}-${message.timestamp || Date.now()}`}
                               id={`message-${message.id}`}
                               style={{
                                 backgroundColor: message.id.toString() === highlightedMessageId 
@@ -2572,8 +2683,9 @@ const WorkspaceDetailPage = () => {
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !isComposing) {
+                    if (e.key === 'Enter' && !isComposing && !isSending) {
                       e.preventDefault();
+                      console.log('Enter 키로 메시지 전송 시도');
                       handleSendMessage();
                     }
                   }}
@@ -2643,33 +2755,6 @@ const WorkspaceDetailPage = () => {
                 📎
               </button>
 
-              <button 
-                onClick={() => setShowRAGModal(true)}
-                style={{
-                  padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
-                  borderRadius: theme.borderRadius.md,
-                  backgroundColor: theme.colors.background.primary,
-                  border: 'none',
-                  color: theme.colors.text.secondary,
-                  cursor: 'pointer',
-                  fontSize: theme.typography.fontSize.base,
-                  transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.ease}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: theme.spacing[1]
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = theme.colors.surface.hover;
-                  e.currentTarget.style.color = theme.colors.text.primary;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = theme.colors.background.primary;
-                  e.currentTarget.style.color = theme.colors.text.secondary;
-                }}
-                title="AI에게 질문하기"
-              >
-                🤖
-              </button>
               
               {/* 전송 버튼 - 고정 크기로 만들기 */}
               <div style={{
@@ -2678,9 +2763,14 @@ const WorkspaceDetailPage = () => {
               }}>
                 {(messageInput.trim() || selectedFiles.length > 0) ? (
                 <button 
-                  onClick={() => {
-                    console.log('전송 버튼 클릭');
-                    handleSendMessage();
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (!isSending) {
+                      console.log('전송 버튼 클릭');
+                      handleSendMessage();
+                    } else {
+                      console.log('전송 중이므로 버튼 클릭 무시');
+                    }
                   }}
                   disabled={isSending}
                   style={{
@@ -2723,6 +2813,21 @@ const WorkspaceDetailPage = () => {
         )}
       </div>
 
+        {/* AI 패널 */}
+        {showAIPanel && (
+          <div style={{
+            width: '400px',
+            flexShrink: 0,
+            height: '100%'
+          }}>
+            <AIPanel
+              workspaceId={workspace?.id?.toString()}
+              channelId={selectedChannel?.id?.toString()}
+              selectedChannelName={selectedChannel?.name || selectedChannel?.channelName}
+            />
+          </div>
+        )}
+
       </div> {/* 메인 콘텐츠 영역 닫기 */}
       
       {/* 이미지 모달 */}
@@ -2737,13 +2842,9 @@ const WorkspaceDetailPage = () => {
         onNext={handleModalNext}
       />
 
-      {/* RAG 모달 */}
-      <RAGModal
-        isOpen={showRAGModal}
-        onClose={() => setShowRAGModal(false)}
-        workspaceId={workspace?.id?.toString()}
-        channelId={selectedChannel?.id?.toString()}
-      />
+      {/* 알림 매니저 */}
+      <NotificationManager />
+
     </div>
   );
 };

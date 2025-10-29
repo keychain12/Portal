@@ -7,9 +7,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -88,6 +90,19 @@ public class UserStatusService {
         //세선 정보 삭제
         stringRedisTemplate.delete(SESSION_USER_PREFIX + sessionId);
     }
+    //워크스페이스 사용자 온라인 조회
+    public List<Long> getOlineUsersInWorkspace(Long workspaceId, List<Long> userIds) {
+        return userIds.stream()
+                .filter(this::isUserOnline)
+                .collect(Collectors.toList());
+    }
+
+    //온라인 상태인지 확인
+    public boolean isUserOnline(Long userId) {
+        String status = getUserStatus(userId);
+        return "ONLINE".equals(status);
+    }
+
 
 
     public void extendUserSession(String sessionId) {

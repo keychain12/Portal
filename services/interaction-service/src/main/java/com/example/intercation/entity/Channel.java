@@ -50,6 +50,10 @@ public class Channel {
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatMessage> chatMessages = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
+
     // 정적 팩토리 메서드
     public static Channel from(Long workspaceId, Long creatorId, String channelName,ChannelType channelType) {
         return Channel.builder()

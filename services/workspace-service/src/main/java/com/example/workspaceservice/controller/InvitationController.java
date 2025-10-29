@@ -43,7 +43,7 @@ public class InvitationController {
     @PostMapping("/accept")
     @Operation(summary = "사용자 워크스페이스 초대", description = "토큰정보 워크스페이스id,초대받은사람email")
     public ResponseEntity<?> acceptInvitation(@RequestParam String token,
-                                              @RequestParam String nickname,
+                                              @RequestParam(required = false) String nickname,
                                               @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
                                               @LoginUserId Long userId) throws IOException {
         // 닉네임과 프로필 이미지를 포함해서 초대 수락

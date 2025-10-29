@@ -66,7 +66,6 @@ public class ChatService {
         ChatMessageResponse response = ChatMessageResponse.toResponse(savedMessage);
         //보내기
         messagingTemplate.convertAndSend("/sub/channel/" + channelId, response);
-
     }
 
     private ChatMessageDocument convertToDocument(ChatMessage chatMessage) { // 엘라스틱서치 도큐먼트엔티티에 넣기
