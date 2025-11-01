@@ -1,10 +1,6 @@
 package com.example.msa.authservice.controller;
 
-import com.example.msa.authservice.domain.Payment;
-import com.example.msa.authservice.dto.request.PaymentConfirmRequest;
-import com.example.msa.authservice.dto.request.PaymentRequest;
-import com.example.msa.authservice.dto.response.PaymentResponse;
-import com.example.msa.authservice.repository.PaymentRepository;
+
 import com.example.msa.authservice.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
