@@ -232,3 +232,7 @@ https://rose-quesadilla-dab.notion.site/25b440d2302f80daac8bce5d48ff201e
 
 ![맨션](https://github.com/user-attachments/assets/8d6c3f0d-b6d3-4460-9fcd-bf23cf7e1726)
 
+- RAG 사용을 위한 구독기능 + 토스페이먼츠 결제 연동 후 구현
+
+![결제](https://github.com/user-attachments/assets/00a4dda0-73de-405e-84ee-57134915cc20)
+
