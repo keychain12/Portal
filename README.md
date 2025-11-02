@@ -228,4 +228,7 @@ https://rose-quesadilla-dab.notion.site/25b440d2302f80daac8bce5d48ff201e
   
 ![rag](https://github.com/user-attachments/assets/54b50e75-a94d-4ab4-901e-c57d15e509ba)
 
+- 협업툴 맨션기능으로 메세지 알림보내기
+
+![맨션](https://github.com/user-attachments/assets/8d6c3f0d-b6d3-4460-9fcd-bf23cf7e1726)
 
